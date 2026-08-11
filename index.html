@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>After Us — Songs For Broken Hearts</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#070707;
+    --card:rgba(255,255,255,.055);
+    --border:rgba(255,255,255,.1);
+    --text:#f5f5f5;
+    --muted:#929292;
+    --accent:#ff365f;
+}
+
+body{
+    background:
+        radial-gradient(circle at 20% 10%,rgba(255,30,80,.12),transparent 30%),
+        radial-gradient(circle at 80% 80%,rgba(100,20,120,.12),transparent 30%),
+        #050505;
+    color:var(--text);
+    font-family:Inter,Arial,sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+/* Background */
+.bg-heart{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:-1;
+}
+
+.bg-heart span{
+    position:absolute;
+    color:rgba(255,50,90,.06);
+    font-size:100px;
+    animation:float 15s linear infinite;
+}
+
+.bg-heart span:nth-child(1){left:8%;top:20%}
+.bg-heart span:nth-child(2){left:75%;top:15%;font-size:150px}
+.bg-heart span:nth-child(3){left:50%;top:70%;font-size:120px}
+.bg-heart span:nth-child(4){left:20%;top:80%;font-size:70px}
+
+@keyframes float{
+    0%{transform:translateY(30px) rotate(0deg)}
+    50%{transform:translateY(-50px) rotate(15deg)}
+    100%{transform:translateY(30px) rotate(0deg)}
+}
+
+/* Header */
+header{
+    width:100%;
+    padding:22px 6%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    backdrop-filter:blur(20px);
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:-1px;
+}
+
+.logo span{
+    color:var(--accent);
+}
+
+.status{
+    color:#888;
+    font-size:12px;
+    letter-spacing:2px;
+}
+
+/* Hero */
+.hero{
+    min-height:50vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:60px 20px 30px;
+}
+
+.badge{
+    border:1px solid rgba(255,255,255,.12);
+    padding:8px 16px;
+    border-radius:50px;
+    color:#aaa;
+    font-size:11px;
+    letter-spacing:3px;
+    margin-bottom:25px;
+    background:rgba(255,255,255,.03);
+}
+
+.hero h1{
+    font-size:clamp(45px,8vw,110px);
+    line-height:.85;
+    letter-spacing:-5px;
+    max-width:1100px;
+}
+
+.hero h1 span{
+    color:var(--accent);
+}
+
+.hero p{
+    margin-top:24px;
+    color:#888;
+    max-width:550px;
+    line-height:1.7;
+    font-size:15px;
+}
+
+.scroll{
+    margin-top:40px;
+    font-size:11px;
+    color:#555;
+    letter-spacing:3px;
+}
+
+/* Main */
+.container{
+    width:min(1200px,92%);
+    margin:auto;
+}
+
+/* Player */
+.player-section{
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:20px;
+    margin-bottom:80px;
+}
+
+.player-card,
+.queue-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:25px;
+    backdrop-filter:blur(25px);
+    overflow:hidden;
+}
+
+.player-card{
+    padding:25px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+/* Audio Player Artwork Display */
+.audio-cover-wrapper{
+    width:100%;
+    max-width:320px;
+    aspect-ratio:1/1;
+    border-radius:50%;
+    background:radial-gradient(circle, #222 0%, #0a0a0a 70%, #000 100%);
+    border:4px solid rgba(255,255,255,.08);
+    box-shadow:0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px rgba(255,54,95,0.2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    margin:20px 0;
+}
+
+.disc-center{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:radial-gradient(circle, var(--accent) 0%, #900c27 100%);
+    border:6px solid #111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:28px;
+    box-shadow:0 0 20px rgba(255,54,95,0.4);
+}
+
+.audio-cover-wrapper.playing{
+    animation:spin 12s linear infinite;
+}
+
+@keyframes spin{
+    100%{ transform:rotate(360deg); }
+}
+
+/* Hidden YouTube Player */
+.hidden-player{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.now-playing{
+    text-align:center;
+    padding:15px 10px 5px;
+}
+
+.now-playing small{
+    color:var(--accent);
+    font-size:10px;
+    letter-spacing:3px;
+}
+
+.now-playing h2{
+    margin-top:7px;
+    font-size:26px;
+}
+
+.now-playing p{
+    color:#777;
+    margin-top:5px;
+    font-size:14px;
+}
+
+/* Quotes */
+.quote{
+    margin:15px 0;
+    min-height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:10px;
+    color:#bbb;
+    font-size:14px;
+    line-height:1.5;
+    font-style:italic;
+    transition:.5s;
+}
+
+.quote.fade{
+    opacity:0;
+    transform:translateY(8px);
+}
+
+/* Controls */
+.controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    margin-top:10px;
+    width:100%;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    color:white;
+    background:rgba(255,255,255,.07);
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    transition:.2s;
+    font-size:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+button:hover{
+    background:var(--accent);
+    transform:scale(1.05);
+}
+
+.play{
+    background:var(--accent);
+    width:60px;
+    height:60px;
+    font-size:20px;
+    box-shadow:0 0 15px rgba(255,54,95,0.4);
+}
+
+/* Queue */
+.queue-card{
+    padding:22px;
+    max-height:600px;
+    display:flex;
+    flex-direction:column;
+}
+
+.queue-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.queue-title h3{
+    font-size:18px;
+}
+
+.queue-title span{
+    color:#666;
+    font-size:12px;
+}
+
+.search{
+    width:100%;
+    padding:13px 16px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--border);
+    border-radius:12px;
+    outline:none;
+    color:white;
+    margin-bottom:15px;
+}
+
+.song-list{
+    overflow-y:auto;
+    padding-right:4px;
+}
+
+.song{
+    padding:13px;
+    border-radius:12px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.song:hover{
+    background:rgba(255,255,255,.06);
+}
+
+.song.active{
+    background:rgba(255,54,95,.1);
+    border:1px solid rgba(255,54,95,.2);
+}
+
+.song-number{
+    color:#555;
+    width:22px;
+    font-size:12px;
+}
+
+.song-info{
+    min-width:0;
+}
+
+.song-info strong{
+    display:block;
+    font-size:13px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.song-info span{
+    color:#666;
+    font-size:11px;
+}
+
+/* About */
+.about{
+    text-align:center;
+    padding:40px 20px 80px;
+}
+
+.about h2{
+    font-size:32px;
+    margin-bottom:15px;
+}
+
+.about p{
+    color:#777;
+    max-width:600px;
+    margin:auto;
+    line-height:1.8;
+}
+
+/* Footer */
+footer{
+    border-top:1px solid rgba(255,255,255,.06);
+    padding:30px;
+    text-align:center;
+    color:#444;
+    font-size:11px;
+    letter-spacing:1px;
+}
+
+/* Mobile */
+@media(max-width:850px){
+    header{ padding:18px 5%; }
+    .status{ display:none; }
+    .hero{ min-height:45vh; padding-top:40px; }
+    .player-section{ grid-template-columns:1fr; }
+    .audio-cover-wrapper{ max-width:240px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg-heart">
+    <span>♡</span>
+    <span>♡</span>
+    <span>♡</span>
+    <span>♡</span>
+</div>
+
+<header>
+    <div class="logo">AFTER<span>US</span> ♡</div>
+    <div class="status">A PLACE FOR BROKEN HEARTS</div>
+</header>
+
+<section class="hero">
+    <div class="badge">FOR THE ONES WHO STILL FEEL</div>
+    <h1>Some songs<br><span>understand</span> you.</h1>
+    <p>
+        Maybe you don't need another person to talk to.
+        Maybe you just need a song that understands
+        exactly what you're feeling.
+    </p>
+    <div class="scroll">SCROLL TO LISTEN ↓</div>
+</section>
+
+<main class="container">
+<section class="player-section">
+
+    <!-- AUDIO PLAYER -->
+    <div class="player-card">
+
+        <!-- Hidden YouTube iFrame (Audio Only Mode) -->
+        <div class="hidden-player">
+            <div id="player"></div>
+        </div>
+
+        <!-- Audio Disc UI -->
+        <div class="audio-cover-wrapper" id="discCover">
+            <div class="disc-center">
+                ♡
+            </div>
+        </div>
+
+        <div class="now-playing">
+            <small>NOW PLAYING (AUDIO)</small>
+            <h2 id="currentTitle">Channa Mereya</h2>
+            <p id="currentArtist">Arijit Singh</p>
+        </div>
+
+        <div class="quote" id="quote">
+            "Some people leave, but their memories don't."
+        </div>
+
+        <div class="controls">
+            <button onclick="previousSong()" title="Previous">↶</button>
+            <button class="play" onclick="togglePlay()" id="playBtn">▶</button>
+            <button onclick="nextSong()" title="Next">↷</button>
+        </div>
+
+    </div>
+
+    <!-- QUEUE -->
+    <div class="queue-card">
+        <div class="queue-title">
+            <h3>Broken Playlist</h3>
+            <span id="songCount">0 songs</span>
+        </div>
+
+        <input
+            class="search"
+            type="text"
+            id="search"
+            placeholder="Search a song..."
+            oninput="searchSongs()"
+        >
+
+        <div class="song-list" id="songList"></div>
+    </div>
+
+</section>
+
+<section class="about">
+    <h2>For the nights that feel too long.</h2>
+    <p>
+        Put your headphones on. Choose a song.
+        Let the music say the things you couldn't.
+        No explanations. No pretending. Just music.
+    </p>
+</section>
+</main>
+
+<footer>
+    AFTER US — MUSIC FOR BROKEN HEARTS
+</footer>
+
+<script>
+const songs = [
+    {
+        title:"Channa Mereya",
+        artist:"Arijit Singh",
+        youtube:"FO9rBogdRRQ"
+    },
+    {
+        title:"Hamari Adhuri Kahani",
+        artist:"Arijit Singh",
+        youtube:"TxT0KZ-EdLs"
+    },
+    {
+        title:"Tera Ghata",
+        artist:"Gajendra Verma",
+        youtube:"VIDEO_ID_HERE"
+    },
+    {
+        title:"Humnava Mere",
+        artist:"Jubin Nautiyal",
+        youtube:"VIDEO_ID_HERE"
+    },
+    {
+        title:"Phir Bhi Tumko Chaahunga",
+        artist:"Arijit Singh",
+        youtube:"VIDEO_ID_HERE"
+    },
+    {
+        title:"Agar Tum Saath Ho",
+        artist:"Alka Yagnik & Arijit Singh",
+        youtube:"VIDEO_ID_HERE"
+    },
+    {
+        title:"Hawayein",
+        artist:"Arijit Singh",
+        youtube:"VIDEO_ID_HERE"
+    },
+    {
+        title:"Tujhe Kitna Chahne Lage",
+        artist:"Arijit Singh",
+        youtube:"VIDEO_ID_HERE"
+    },
+    {
+        title:"Tum Hi Ho",
+        artist:"Arijit Singh",
+        youtube:"VIDEO_ID_HERE"
+    },
+    {
+        title:"Bekhayali",
+        artist:"Sachet Tandon",
+        youtube:"VIDEO_ID_HERE"
+    }
+];
+
+const quotes = [
+    "Some people leave, but their memories don't.",
+    "It hurts when the person you can't forget forgets you.",
+    "Maybe we were meant to be a lesson, not a lifetime.",
+    "You stopped talking. I started understanding.",
+    "Sometimes silence says everything.",
+    "The hardest goodbye is the one you never got to say.",
+    "I miss what we were, not what we became.",
+    "Some memories have no expiry date.",
+    "You were my favorite chapter. I just wish it had a better ending.",
+    "Not every love story gets the ending it deserves.",
+    "I stopped waiting. But I never stopped remembering.",
+    "The heart remembers what the mind tries to forget.",
+    "Maybe someday this song won't remind me of you.",
+    "We became strangers with memories.",
+    "Some goodbyes happen without words."
+];
+
+let currentSong = 0;
+let player;
+let isPlaying = false;
+
+function onYouTubeIframeAPIReady(){
+    player = new YT.Player('player',{
+        videoId:songs[currentSong].youtube,
+        playerVars:{
+            autoplay:0,
+            controls:0,
+            rel:0,
+            modestbranding:1
+        },
+        events:{
+            onReady:onPlayerReady,
+            onStateChange:onPlayerStateChange
+        }
+    });
+}
+
+function onPlayerReady(){
+    updateNowPlaying();
+    renderSongs();
+}
+
+function onPlayerStateChange(event){
+    const disc = document.getElementById("discCover");
+    const playBtn = document.getElementById("playBtn");
+
+    if(event.data === YT.PlayerState.PLAYING){
+        isPlaying = true;
+        playBtn.innerHTML = "Ⅱ";
+        disc.classList.add("playing");
+    }
+
+    if(event.data === YT.PlayerState.PAUSED){
+        isPlaying = false;
+        playBtn.innerHTML = "▶";
+        disc.classList.remove("playing");
+    }
+
+    if(event.data === YT.PlayerState.ENDED){
+        nextSong();
+    }
+}
+
+function togglePlay(){
+    if(!player) return;
+
+    if(isPlaying){
+        player.pauseVideo();
+    }else{
+        player.playVideo();
+    }
+}
+
+function nextSong(){
+    currentSong++;
+    if(currentSong >= songs.length){
+        currentSong = 0;
+    }
+    loadSong();
+}
+
+function previousSong(){
+    currentSong--;
+    if(currentSong < 0){
+        currentSong = songs.length - 1;
+    }
+    loadSong();
+}
+
+function loadSong(){
+    const song = songs[currentSong];
+
+    if(!song.youtube || song.youtube.includes("VIDEO_ID")){
+        alert("Is song ka YouTube Video ID abhi add nahi kiya gaya.");
+        return;
+    }
+
+    player.loadVideoById(song.youtube);
+    updateNowPlaying();
+    renderSongs();
+}
+
+function updateNowPlaying(){
+    const song = songs[currentSong];
+    document.getElementById("currentTitle").innerText = song.title;
+    document.getElementById("currentArtist").innerText = song.artist;
+}
+
+function renderSongs(filter=""){
+    const list = document.getElementById("songList");
+    list.innerHTML = "";
+
+    let visibleSongs = songs.filter(song =>
+        song.title.toLowerCase().includes(filter.toLowerCase()) ||
+        song.artist.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    visibleSongs.forEach((song)=>{
+        const realIndex = songs.indexOf(song);
+        const div = document.createElement("div");
+        div.className = "song";
+
+        if(realIndex === currentSong){
+            div.classList.add("active");
+        }
+
+        div.innerHTML = `
+            <div class="song-number">
+                ${String(realIndex+1).padStart(2,"0")}
+            </div>
+            <div class="song-info">
+                <strong>${song.title}</strong>
+                <span>${song.artist}</span>
+            </div>
+        `;
+
+        div.onclick = () => {
+            currentSong = realIndex;
+            loadSong();
+        };
+
+        list.appendChild(div);
+    });
+
+    document.getElementById("songCount").innerText = songs.length + " songs";
+}
+
+function searchSongs(){
+    const value = document.getElementById("search").value;
+    renderSongs(value);
+}
+
+/* Quote Rotation */
+let quoteIndex = 0;
+setInterval(()=>{
+    const quote = document.getElementById("quote");
+    quote.classList.add("fade");
+
+    setTimeout(()=>{
+        quoteIndex++;
+        if(quoteIndex >= quotes.length){
+            quoteIndex = 0;
+        }
+        quote.innerText = '"' + quotes[quoteIndex] + '"';
+        quote.classList.remove("fade");
+    }, 500);
+}, 4000);
+
+/* Load YouTube API */
+const tag = document.createElement("script");
+tag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(tag);
+
+renderSongs();
+</script>
+
+</body>
+</html>
