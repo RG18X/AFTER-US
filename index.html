@@ -20,6 +20,7 @@
     --text:#f5f5f5;
     --muted:#929292;
     --accent:#ff365f;
+    --accent-glow:rgba(255,54,95,0.4);
 }
 
 body{
@@ -49,15 +50,15 @@ body{
     animation:float 15s linear infinite;
 }
 
-.bg-heart span:nth-child(1){left:8%;top:20%}
-.bg-heart span:nth-child(2){left:75%;top:15%;font-size:150px}
-.bg-heart span:nth-child(3){left:50%;top:70%;font-size:120px}
-.bg-heart span:nth-child(4){left:20%;top:80%;font-size:70px}
+.bg-heart span:nth-child(1){left:8%;top:20%; animation-duration: 18s;}
+.bg-heart span:nth-child(2){left:75%;top:15%;font-size:150px; animation-duration: 12s;}
+.bg-heart span:nth-child(3){left:50%;top:70%;font-size:120px; animation-duration: 20s;}
+.bg-heart span:nth-child(4){left:20%;top:80%;font-size:70px; animation-duration: 14s;}
 
 @keyframes float{
-    0%{transform:translateY(30px) rotate(0deg)}
-    50%{transform:translateY(-50px) rotate(15deg)}
-    100%{transform:translateY(30px) rotate(0deg)}
+    0%{transform:translateY(30px) rotate(0deg) scale(1);}
+    50%{transform:translateY(-50px) rotate(15deg) scale(1.1);}
+    100%{transform:translateY(30px) rotate(0deg) scale(1);}
 }
 
 /* Header */
@@ -82,6 +83,7 @@ header{
 
 .logo span{
     color:var(--accent);
+    text-shadow: 0 0 10px var(--accent-glow);
 }
 
 .status{
@@ -92,13 +94,13 @@ header{
 
 /* Hero */
 .hero{
-    min-height:50vh;
+    min-height:45vh;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     text-align:center;
-    padding:60px 20px 30px;
+    padding:40px 20px 20px;
 }
 
 .badge{
@@ -110,12 +112,18 @@ header{
     letter-spacing:3px;
     margin-bottom:25px;
     background:rgba(255,255,255,.03);
+    animation: pulseBadge 3s infinite ease-in-out;
+}
+
+@keyframes pulseBadge {
+    0%, 100% { border-color: rgba(255,255,255,.12); box-shadow: 0 0 0px transparent; }
+    50% { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
 }
 
 .hero h1{
-    font-size:clamp(45px,8vw,110px);
-    line-height:.85;
-    letter-spacing:-5px;
+    font-size:clamp(45px,8vw,100px);
+    line-height:.9;
+    letter-spacing:-4px;
     max-width:1100px;
 }
 
@@ -124,7 +132,7 @@ header{
 }
 
 .hero p{
-    margin-top:24px;
+    margin-top:20px;
     color:#888;
     max-width:550px;
     line-height:1.7;
@@ -132,23 +140,30 @@ header{
 }
 
 .scroll{
-    margin-top:40px;
+    margin-top:30px;
     font-size:11px;
     color:#555;
     letter-spacing:3px;
+    animation: bounce 2s infinite;
 }
 
-/* Main */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+    40% {transform: translateY(-8px);}
+    60% {transform: translateY(-4px);}
+}
+
+/* Main Container */
 .container{
     width:min(1200px,92%);
     margin:auto;
 }
 
-/* Player */
+/* Player Layout */
 .player-section{
     display:grid;
     grid-template-columns:1.2fr .8fr;
-    gap:20px;
+    gap:25px;
     margin-bottom:80px;
 }
 
@@ -159,34 +174,42 @@ header{
     border-radius:25px;
     backdrop-filter:blur(25px);
     overflow:hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.player-card:hover, .queue-card:hover {
+    border-color: rgba(255,255,255,.2);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
 
 .player-card{
-    padding:25px;
+    padding:30px;
     display:flex;
     flex-direction:column;
     align-items:center;
+    position: relative;
 }
 
-/* Audio Player Artwork Display */
+/* Audio Cover / Vinyl Disc */
 .audio-cover-wrapper{
     width:100%;
-    max-width:320px;
+    max-width:280px;
     aspect-ratio:1/1;
     border-radius:50%;
     background:radial-gradient(circle, #222 0%, #0a0a0a 70%, #000 100%);
     border:4px solid rgba(255,255,255,.08);
-    box-shadow:0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px rgba(255,54,95,0.2);
+    box-shadow:0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px rgba(255,54,95,0.1);
     display:flex;
     align-items:center;
     justify-content:center;
     position:relative;
-    margin:20px 0;
+    margin:15px 0 25px;
+    transition: box-shadow 0.5s ease;
 }
 
 .disc-center{
-    width:90px;
-    height:90px;
+    width:85px;
+    height:85px;
     border-radius:50%;
     background:radial-gradient(circle, var(--accent) 0%, #900c27 100%);
     border:6px solid #111;
@@ -194,19 +217,53 @@ header{
     align-items:center;
     justify-content:center;
     color:#fff;
-    font-size:28px;
-    box-shadow:0 0 20px rgba(255,54,95,0.4);
+    font-size:26px;
+    box-shadow:0 0 20px var(--accent-glow);
+    z-index: 2;
+}
+
+/* Equalizer Bars Effect */
+.equalizer {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 30px;
+    position: absolute;
+    bottom: 25px;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+}
+
+.equalizer.active {
+    opacity: 1;
+}
+
+.eq-bar {
+    width: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    height: 5px;
+}
+
+.equalizer.active .eq-bar:nth-child(1) { animation: eq 0.8s infinite alternate ease-in-out; }
+.equalizer.active .eq-bar:nth-child(2) { animation: eq 1.2s infinite alternate ease-in-out 0.2s; }
+.equalizer.active .eq-bar:nth-child(3) { animation: eq 0.6s infinite alternate ease-in-out 0.4s; }
+.equalizer.active .eq-bar:nth-child(4) { animation: eq 1.0s infinite alternate ease-in-out 0.1s; }
+
+@keyframes eq {
+    0% { height: 4px; }
+    100% { height: 28px; }
 }
 
 .audio-cover-wrapper.playing{
     animation:spin 12s linear infinite;
+    box-shadow:0 15px 40px rgba(255,54,95,0.25), inset 0 0 25px var(--accent-glow);
 }
 
 @keyframes spin{
     100%{ transform:rotate(360deg); }
 }
 
-/* Hidden YouTube Player */
 .hidden-player{
     position:absolute;
     width:1px;
@@ -218,40 +275,136 @@ header{
 
 .now-playing{
     text-align:center;
-    padding:15px 10px 5px;
+    padding:5px;
 }
 
 .now-playing small{
     color:var(--accent);
     font-size:10px;
     letter-spacing:3px;
+    font-weight: 600;
 }
 
 .now-playing h2{
-    margin-top:7px;
-    font-size:26px;
+    margin-top:6px;
+    font-size:24px;
+    transition: color 0.3s;
 }
 
 .now-playing p{
     color:#777;
-    margin-top:5px;
-    font-size:14px;
+    margin-top:4px;
+    font-size:13px;
+}
+
+/* Progress Bar & Timing */
+.progress-container {
+    width: 100%;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.progress-bar-wrapper {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: height 0.2s;
+}
+
+.progress-bar-wrapper:hover {
+    height: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #ff6b8b);
+    border-radius: 10px;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.time-display {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #777;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Volume Control */
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 60%;
+    margin-top: 15px;
+}
+
+.volume-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    width: auto;
+    height: auto;
+}
+
+.volume-btn:hover {
+    color: #fff;
+    background: none;
+    transform: none;
+}
+
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
+    cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--accent-glow);
+    transition: transform 0.1s;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
 }
 
 /* Quotes */
 .quote{
-    margin:15px 0;
-    min-height:60px;
+    margin:12px 0;
+    min-height:50px;
     display:flex;
     align-items:center;
     justify-content:center;
     text-align:center;
-    padding:10px;
-    color:#bbb;
-    font-size:14px;
+    padding:8px;
+    color:#aaa;
+    font-size:13px;
     line-height:1.5;
     font-style:italic;
-    transition:.5s;
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .quote.fade{
@@ -259,17 +412,17 @@ header{
     transform:translateY(8px);
 }
 
-/* Controls */
+/* Play Controls */
 .controls{
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:16px;
+    gap:18px;
     margin-top:10px;
     width:100%;
 }
 
-button{
+button.ctrl-btn{
     border:none;
     cursor:pointer;
     color:white;
@@ -277,30 +430,36 @@ button{
     width:48px;
     height:48px;
     border-radius:50%;
-    transition:.2s;
+    transition: all 0.2s ease;
     font-size:16px;
     display:flex;
     align-items:center;
     justify-content:center;
 }
 
-button:hover{
-    background:var(--accent);
-    transform:scale(1.05);
+button.ctrl-btn:hover{
+    background:rgba(255,255,255,.15);
+    transform:scale(1.08);
 }
 
-.play{
+button.play{
     background:var(--accent);
-    width:60px;
-    height:60px;
+    width:62px;
+    height:62px;
     font-size:20px;
-    box-shadow:0 0 15px rgba(255,54,95,0.4);
+    box-shadow:0 0 20px var(--accent-glow);
 }
 
-/* Queue */
+button.play:hover{
+    background: #ff1f4c;
+    transform:scale(1.1);
+    box-shadow:0 0 30px var(--accent-glow);
+}
+
+/* Queue List */
 .queue-card{
-    padding:22px;
-    max-height:600px;
+    padding:25px;
+    max-height:620px;
     display:flex;
     flex-direction:column;
 }
@@ -330,6 +489,12 @@ button:hover{
     outline:none;
     color:white;
     margin-bottom:15px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.search:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(255,54,95,0.2);
 }
 
 .song-list{
@@ -337,33 +502,50 @@ button:hover{
     padding-right:4px;
 }
 
+.song-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.song-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
 .song{
-    padding:13px;
+    padding:12px 14px;
     border-radius:12px;
     display:flex;
     gap:12px;
     align-items:center;
     cursor:pointer;
-    transition:.2s;
+    transition: background 0.2s ease, transform 0.2s ease;
+    margin-bottom: 4px;
 }
 
 .song:hover{
-    background:rgba(255,255,255,.06);
+    background:rgba(255,255,255,.07);
+    transform: translateX(4px);
 }
 
 .song.active{
-    background:rgba(255,54,95,.1);
-    border:1px solid rgba(255,54,95,.2);
+    background:rgba(255,54,95,.12);
+    border:1px solid rgba(255,54,95,.3);
+}
+
+.song.active .song-info strong {
+    color: var(--accent);
 }
 
 .song-number{
     color:#555;
     width:22px;
     font-size:12px;
+    font-weight: 600;
 }
 
 .song-info{
     min-width:0;
+    flex: 1;
 }
 
 .song-info strong{
@@ -372,6 +554,7 @@ button:hover{
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
+    transition: color 0.2s;
 }
 
 .song-info span{
@@ -379,7 +562,7 @@ button:hover{
     font-size:11px;
 }
 
-/* About */
+/* About Section */
 .about{
     text-align:center;
     padding:40px 20px 80px;
@@ -407,13 +590,14 @@ footer{
     letter-spacing:1px;
 }
 
-/* Mobile */
+/* Mobile Responsiveness */
 @media(max-width:850px){
     header{ padding:18px 5%; }
     .status{ display:none; }
-    .hero{ min-height:45vh; padding-top:40px; }
+    .hero{ min-height:40vh; padding-top:30px; }
     .player-section{ grid-template-columns:1fr; }
-    .audio-cover-wrapper{ max-width:240px; }
+    .audio-cover-wrapper{ max-width:220px; }
+    .volume-container { width: 80%; }
 }
 </style>
 </head>
@@ -456,25 +640,49 @@ footer{
 
         <!-- Audio Disc UI -->
         <div class="audio-cover-wrapper" id="discCover">
-            <div class="disc-center">
-                ♡
+            <div class="disc-center">♡</div>
+            
+            <!-- Animated Equalizer -->
+            <div class="equalizer" id="equalizer">
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
             </div>
         </div>
 
         <div class="now-playing">
             <small>NOW PLAYING (AUDIO)</small>
-            <h2 id="currentTitle">Channa Mereya</h2>
-            <p id="currentArtist">Arijit Singh</p>
+            <h2 id="currentTitle">Dreams</h2>
+            <p id="currentArtist">Amber</p>
+        </div>
+
+        <!-- Progress Bar & Timing -->
+        <div class="progress-container">
+            <div class="progress-bar-wrapper" id="progressWrapper" onclick="seekSong(event)">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">0:00</span>
+                <span id="totalDuration">0:00</span>
+            </div>
         </div>
 
         <div class="quote" id="quote">
             "Some people leave, but their memories don't."
         </div>
 
+        <!-- Play Controls -->
         <div class="controls">
-            <button onclick="previousSong()" title="Previous">↶</button>
-            <button class="play" onclick="togglePlay()" id="playBtn">▶</button>
-            <button onclick="nextSong()" title="Next">↷</button>
+            <button class="ctrl-btn" onclick="previousSong()" title="Previous">↶</button>
+            <button class="ctrl-btn play" onclick="togglePlay()" id="playBtn">▶</button>
+            <button class="ctrl-btn" onclick="nextSong()" title="Next">↷</button>
+        </div>
+
+        <!-- Volume Control -->
+        <div class="volume-container">
+            <button class="volume-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100" oninput="changeVolume(this.value)">
         </div>
 
     </div>
@@ -588,6 +796,9 @@ const quotes = [
 let currentSong = 0;
 let player;
 let isPlaying = false;
+let progressTimer;
+let isMuted = false;
+let currentVolume = 100;
 
 function onYouTubeIframeAPIReady(){
     player = new YT.Player('player',{
@@ -613,17 +824,20 @@ function onPlayerReady(){
 function onPlayerStateChange(event){
     const disc = document.getElementById("discCover");
     const playBtn = document.getElementById("playBtn");
+    const equalizer = document.getElementById("equalizer");
 
     if(event.data === YT.PlayerState.PLAYING){
         isPlaying = true;
         playBtn.innerHTML = "Ⅱ";
         disc.classList.add("playing");
-    }
-
-    if(event.data === YT.PlayerState.PAUSED){
+        equalizer.classList.add("active");
+        startProgressLoop();
+    } else {
         isPlaying = false;
         playBtn.innerHTML = "▶";
         disc.classList.remove("playing");
+        equalizer.classList.remove("active");
+        stopProgressLoop();
     }
 
     if(event.data === YT.PlayerState.ENDED){
@@ -668,12 +882,101 @@ function loadSong(){
     player.loadVideoById(song.youtube);
     updateNowPlaying();
     renderSongs();
+    resetProgressBar();
 }
 
 function updateNowPlaying(){
     const song = songs[currentSong];
     document.getElementById("currentTitle").innerText = song.title;
     document.getElementById("currentArtist").innerText = song.artist;
+}
+
+/* Progress & Time Logic */
+function startProgressLoop() {
+    stopProgressLoop();
+    progressTimer = setInterval(updateProgress, 500);
+}
+
+function stopProgressLoop() {
+    clearInterval(progressTimer);
+}
+
+function updateProgress() {
+    if (!player || !player.getCurrentTime) return;
+    
+    const currentTime = player.getCurrentTime() || 0;
+    const duration = player.getDuration() || 0;
+
+    if (duration > 0) {
+        const percent = (currentTime / duration) * 100;
+        document.getElementById("progressFill").style.width = percent + "%";
+        document.getElementById("currentTime").innerText = formatTime(currentTime);
+        document.getElementById("totalDuration").innerText = formatTime(duration);
+    }
+}
+
+function resetProgressBar() {
+    document.getElementById("progressFill").style.width = "0%";
+    document.getElementById("currentTime").innerText = "0:00";
+    document.getElementById("totalDuration").innerText = "0:00";
+}
+
+function seekSong(event) {
+    if (!player || !player.getDuration) return;
+    
+    const wrapper = document.getElementById("progressWrapper");
+    const rect = wrapper.getBoundingClientRect();
+    const clickPosition = (event.clientX - rect.left) / rect.width;
+    const duration = player.getDuration();
+    
+    if (duration) {
+        const seekTime = clickPosition * duration;
+        player.seekTo(seekTime, true);
+        updateProgress();
+    }
+}
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+/* Volume Control Logic */
+function changeVolume(value) {
+    currentVolume = value;
+    if (player && player.setVolume) {
+        player.setVolume(value);
+    }
+    updateMuteIcon(value);
+}
+
+function toggleMute() {
+    if (!player) return;
+    
+    if (isMuted) {
+        player.unMute();
+        player.setVolume(currentVolume);
+        document.getElementById("volumeSlider").value = currentVolume;
+        isMuted = false;
+        updateMuteIcon(currentVolume);
+    } else {
+        player.mute();
+        document.getElementById("volumeSlider").value = 0;
+        isMuted = true;
+        document.getElementById("muteBtn").innerText = "🔇";
+    }
+}
+
+function updateMuteIcon(val) {
+    const muteBtn = document.getElementById("muteBtn");
+    if (val == 0) {
+        muteBtn.innerText = "🔇";
+    } else if (val < 50) {
+        muteBtn.innerText = "🔉";
+    } else {
+        muteBtn.innerText = "🔊";
+    }
 }
 
 function renderSongs(filter=""){
