@@ -540,9 +540,52 @@ button.play:hover{
     background: #ff1f4c;
 }
 
+/* Search Results Section */
+.search-results-wrapper {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 54, 95, 0.3);
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 15px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.search-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.close-search-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.close-search-btn:hover {
+    color: #fff;
+}
+
+.search-results-wrapper::-webkit-scrollbar {
+    width: 4px;
+}
+
+.search-results-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 54, 95, 0.3);
+    border-radius: 4px;
+}
+
 .song-list{
     overflow-y:auto;
     padding-right:4px;
+    flex: 1;
 }
 
 .song-list::-webkit-scrollbar {
@@ -779,9 +822,18 @@ footer{
                 type="text"
                 id="search"
                 placeholder="Search any song on YouTube..."
-                onkeypress="if(event.key === 'Enter') fetchSongFromYouTube()"
+                onkeypress="if(event.key === 'Enter') searchYouTubeSongs()"
             >
-            <button class="search-btn" onclick="fetchSongFromYouTube()">Search</button>
+            <button class="search-btn" onclick="searchYouTubeSongs()">Search</button>
+        </div>
+
+        <!-- Dynamic Search Results -->
+        <div class="search-results-wrapper" id="searchResultsContainer" style="display: none;">
+            <div class="search-results-header">
+                <span>SEARCH RESULTS</span>
+                <button class="close-search-btn" onclick="closeSearchResults()">✕</button>
+            </div>
+            <div id="searchResultsList"></div>
         </div>
 
         <div class="song-list" id="songList"></div>
@@ -804,6 +856,7 @@ footer{
     <div class="developer-credit">Developed by - <a href="https://rg18x.github.io/Profile/" target="_blank" rel="noopener noreferrer">RG18</a></div>
 </footer>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
 const YOUTUBE_API_KEY = "AIzaSyBLoglvlTn9aZfi_kg-O31Xy1wqktmvDno"; 
 
@@ -884,27 +937,69 @@ function onPlayerReady(){
 }
 
 function onPlayerStateChange(event){
-    const disc = document.getElementById("discCover");
-    const playBtn = document.getElementById("playBtn");
-    const equalizer = document.getElementById("equalizer");
-
     if(event.data === YT.PlayerState.PLAYING){
         isPlaying = true;
-        playBtn.innerHTML = "Ⅱ";
-        disc.classList.add("playing");
-        equalizer.classList.add("active");
-        startProgressLoop();
-    } else {
+        updatePlayStateUI();
+        startProgressBar();
+    } else if(event.data === YT.PlayerState.PAUSED){
         isPlaying = false;
-        playBtn.innerHTML = "▶";
-        disc.classList.remove("playing");
-        equalizer.classList.remove("active");
-        stopProgressLoop();
-    }
-
-    if(event.data === YT.PlayerState.ENDED){
+        updatePlayStateUI();
+        stopProgressBar();
+    } else if(event.data === YT.PlayerState.ENDED){
         nextSong();
     }
+}
+
+function updatePlayStateUI() {
+    document.getElementById('playBtn').innerText = isPlaying ? "⏸" : "▶";
+    const disc = document.getElementById('discCover');
+    const equalizer = document.getElementById('equalizer');
+    
+    if (isPlaying) {
+        disc.classList.add('playing');
+        equalizer.classList.add('active');
+    } else {
+        disc.classList.remove('playing');
+        equalizer.classList.remove('active');
+    }
+}
+
+function renderSongs(){
+    const list = document.getElementById('songList');
+    list.innerHTML = "";
+
+    songs.forEach((song, i) => {
+        const div = document.createElement('div');
+        div.className = `song ${i === currentSong ? 'active' : ''}`;
+        div.onclick = (e) => {
+            if (!e.target.classList.contains('item-like-btn')) {
+                selectSong(i);
+            }
+        };
+
+        div.innerHTML = `
+            <div class="song-number">${(i + 1).toString().padStart(2, '0')}</div>
+            <div class="song-info">
+                <strong>${song.title}</strong>
+                <span>${song.artist}</span>
+            </div>
+            <button class="item-like-btn ${song.liked ? 'liked' : ''}" onclick="toggleLike(event, ${i})">
+                ${song.liked ? '♥' : '♡'}
+            </button>
+        `;
+
+        list.appendChild(div);
+    });
+
+    document.getElementById('songCount').innerText = `${songs.length} songs`;
+}
+
+function selectSong(index){
+    currentSong = index;
+    player.loadVideoById(songs[currentSong].youtube);
+    updateNowPlaying();
+    renderSongs();
+    changeQuote();
 }
 
 function togglePlay(){
@@ -912,276 +1007,220 @@ function togglePlay(){
 
     if(isPlaying){
         player.pauseVideo();
-    }else{
+    } else {
         player.playVideo();
     }
 }
 
 function nextSong(){
-    currentSong++;
-    if(currentSong >= songs.length){
-        currentSong = 0;
-    }
-    loadSong();
+    currentSong = (currentSong + 1) % songs.length;
+    selectSong(currentSong);
 }
 
 function previousSong(){
-    currentSong--;
-    if(currentSong < 0){
-        currentSong = songs.length - 1;
-    }
-    loadSong();
-}
-
-function loadSong(){
-    const song = songs[currentSong];
-
-    if(!song.youtube || song.youtube.includes("VIDEO_ID")){
-        alert("Is song ka YouTube Video ID abhi add nahi kiya gaya.");
-        return;
-    }
-
-    player.loadVideoById(song.youtube);
-    updateNowPlaying();
-    renderSongs();
-    resetProgressBar();
+    currentSong = (currentSong - 1 + songs.length) % songs.length;
+    selectSong(currentSong);
 }
 
 function updateNowPlaying(){
     const song = songs[currentSong];
-    document.getElementById("currentTitle").innerText = song.title;
-    document.getElementById("currentArtist").innerText = song.artist;
+    document.getElementById('currentTitle').innerText = song.title;
+    document.getElementById('currentArtist').innerText = song.artist;
     
-    const likeBtn = document.getElementById("likeMainBtn");
-    if(song.liked) {
-        likeBtn.innerHTML = "♥";
-        likeBtn.classList.add("liked");
-    } else {
-        likeBtn.innerHTML = "♡";
-        likeBtn.classList.remove("liked");
-    }
+    const likeBtn = document.getElementById('likeMainBtn');
+    likeBtn.innerText = song.liked ? '♥' : '♡';
+    likeBtn.className = `like-main-btn ${song.liked ? 'liked' : ''}`;
 }
 
 function toggleCurrentLike() {
     songs[currentSong].liked = !songs[currentSong].liked;
     saveSongsToStorage();
     sortSongs();
-    saveSongsToStorage();
     updateNowPlaying();
     renderSongs();
 }
 
-function toggleSongLike(index, event) {
+function toggleLike(event, index) {
     event.stopPropagation();
     songs[index].liked = !songs[index].liked;
     saveSongsToStorage();
     sortSongs();
-    saveSongsToStorage();
     updateNowPlaying();
     renderSongs();
 }
 
-/* YouTube Real-Time API Search */
-async function fetchSongFromYouTube() {
-    const query = document.getElementById("search").value.trim();
-    if (!query) return;
-
-    try {
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.items && data.items.length > 0) {
-            const item = data.items[0];
-            const videoId = item.id.videoId;
-            const title = item.snippet.title;
-            const artist = item.snippet.channelTitle;
-
-            const newSong = {
-                title: title,
-                artist: artist,
-                youtube: videoId,
-                liked: false
-            };
-
-            // Check if song already exists
-            const existingIndex = songs.findIndex(s => s.youtube === videoId);
-            if(existingIndex !== -1) {
-                currentSong = existingIndex;
-            } else {
-                songs.unshift(newSong);
-                currentSong = 0;
-            }
-
-            saveSongsToStorage();
-            sortSongs();
-            saveSongsToStorage();
-            loadSong();
-            player.playVideo();
-            document.getElementById("search").value = "";
-        } else {
-            alert("Song nahi mila! Kuch aur try karein.");
-        }
-    } catch (err) {
-        alert("Search karne me problem hui. Key check karein.");
-        console.error(err);
-    }
-}
-
-/* Progress & Time Logic */
-function startProgressLoop() {
-    stopProgressLoop();
-    progressTimer = setInterval(updateProgress, 500);
-}
-
-function stopProgressLoop() {
-    clearInterval(progressTimer);
-}
-
-function updateProgress() {
-    if (!player || !player.getCurrentTime) return;
+function changeQuote(){
+    const quoteEl = document.getElementById('quote');
+    quoteEl.classList.add('fade');
     
-    const currentTime = player.getCurrentTime() || 0;
-    const duration = player.getDuration() || 0;
-
-    if (duration > 0) {
-        const percent = (currentTime / duration) * 100;
-        document.getElementById("progressFill").style.width = percent + "%";
-        document.getElementById("currentTime").innerText = formatTime(currentTime);
-        document.getElementById("totalDuration").innerText = formatTime(duration);
-    }
+    setTimeout(() => {
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        quoteEl.innerText = `"${randomQuote}"`;
+        quoteEl.classList.remove('fade');
+    }, 500);
 }
 
-function resetProgressBar() {
-    document.getElementById("progressFill").style.width = "0%";
-    document.getElementById("currentTime").innerText = "0:00";
-    document.getElementById("totalDuration").innerText = "0:00";
+/* Progress Bar Logic */
+function startProgressBar() {
+    stopProgressBar();
+    progressTimer = setInterval(() => {
+        if (player && player.getCurrentTime && player.getDuration) {
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+            
+            if (duration > 0) {
+                const pct = (currentTime / duration) * 100;
+                document.getElementById('progressFill').style.width = `${pct}%`;
+                document.getElementById('currentTime').innerText = formatTime(currentTime);
+                document.getElementById('totalDuration').innerText = formatTime(duration);
+            }
+        }
+    }, 500);
+}
+
+function stopProgressBar() {
+    clearInterval(progressTimer);
 }
 
 function seekSong(event) {
     if (!player || !player.getDuration) return;
-    
-    const wrapper = document.getElementById("progressWrapper");
+    const wrapper = document.getElementById('progressWrapper');
     const rect = wrapper.getBoundingClientRect();
-    const clickPosition = (event.clientX - rect.left) / rect.width;
+    const clickX = event.clientX - rect.left;
+    const width = rect.width;
     const duration = player.getDuration();
     
-    if (duration) {
-        const seekTime = clickPosition * duration;
+    if (duration > 0) {
+        const seekTime = (clickX / width) * duration;
         player.seekTo(seekTime, true);
-        updateProgress();
+        document.getElementById('progressFill').style.width = `${(clickX / width) * 100}%`;
     }
 }
 
 function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    const min = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+    return `${min}:${sec < 10 ? '0' : ''}${sec}`;
 }
 
-/* Volume Control Logic */
-function changeVolume(value) {
-    currentVolume = value;
+/* Volume Control */
+function changeVolume(val) {
+    currentVolume = val;
     if (player && player.setVolume) {
-        player.setVolume(value);
+        player.setVolume(val);
     }
-    updateMuteIcon(value);
-    updateVolumeSliderBackground(value);
+    if (val == 0) {
+        isMuted = true;
+        document.getElementById('muteBtn').innerText = '🔇';
+    } else {
+        isMuted = false;
+        document.getElementById('muteBtn').innerText = '🔊';
+    }
+    updateVolumeSliderBackground(val);
 }
 
-function updateVolumeSliderBackground(value) {
-    const slider = document.getElementById("volumeSlider");
-    slider.style.background = `linear-gradient(to right, var(--accent) ${value}%, rgba(255, 255, 255, 0.15) ${value}%)`;
+function updateVolumeSliderBackground(val) {
+    const slider = document.getElementById('volumeSlider');
+    slider.style.background = `linear-gradient(to right, var(--accent) ${val}%, rgba(255, 255, 255, 0.15) ${val}%)`;
 }
 
 function toggleMute() {
     if (!player) return;
-    
     if (isMuted) {
         player.unMute();
-        player.setVolume(currentVolume);
-        document.getElementById("volumeSlider").value = currentVolume;
-        updateVolumeSliderBackground(currentVolume);
         isMuted = false;
-        updateMuteIcon(currentVolume);
+        document.getElementById('muteBtn').innerText = '🔊';
+        document.getElementById('volumeSlider').value = currentVolume;
+        updateVolumeSliderBackground(currentVolume);
     } else {
         player.mute();
-        document.getElementById("volumeSlider").value = 0;
-        updateVolumeSliderBackground(0);
         isMuted = true;
-        document.getElementById("muteBtn").innerText = "🔇";
+        document.getElementById('muteBtn').innerText = '🔇';
+        document.getElementById('volumeSlider').value = 0;
+        updateVolumeSliderBackground(0);
     }
 }
 
-function updateMuteIcon(val) {
-    const muteBtn = document.getElementById("muteBtn");
-    if (val == 0) {
-        muteBtn.innerText = "🔇";
-    } else if (val < 50) {
-        muteBtn.innerText = "bottom";
-    } else {
-        muteBtn.innerText = "🔊";
-    }
-}
+/* Search YouTube Songs & Display List */
+async function searchYouTubeSongs() {
+    const query = document.getElementById('search').value.trim();
+    if (!query) return;
 
-function renderSongs(){
-    const list = document.getElementById("songList");
-    list.innerHTML = "";
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}&maxResults=5`;
 
-    songs.forEach((song, index)=>{
-        const div = document.createElement("div");
-        div.className = "song";
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
 
-        if(index === currentSong){
-            div.classList.add("active");
+        if (data.items && data.items.length > 0) {
+            displaySearchResults(data.items);
+        } else {
+            alert('No songs found. Try a different query!');
         }
+    } catch (err) {
+        console.error('YouTube API Error:', err);
+        alert('Could not search YouTube right now.');
+    }
+}
+
+function displaySearchResults(items) {
+    const resultsContainer = document.getElementById('searchResultsContainer');
+    const resultsList = document.getElementById('searchResultsList');
+    
+    resultsList.innerHTML = "";
+
+    items.forEach(item => {
+        const title = item.snippet.title;
+        const artist = item.snippet.channelTitle;
+        const videoId = item.id.videoId;
+
+        const div = document.createElement('div');
+        div.className = 'song';
+        div.onclick = () => selectSearchResult(title, artist, videoId);
 
         div.innerHTML = `
-            <div class="song-number">
-                ${String(index+1).padStart(2,"0")}
-            </div>
             <div class="song-info">
-                <strong>${song.title}</strong>
-                <span>${song.artist}</span>
+                <strong>${title}</strong>
+                <span>${artist}</span>
             </div>
-            <button class="item-like-btn ${song.liked ? 'liked' : ''}" onclick="toggleSongLike(${index}, event)">
-                ${song.liked ? '♥' : '♡'}
-            </button>
+            <span style="color: var(--accent); font-size: 11px;">▶ Play</span>
         `;
 
-        div.onclick = () => {
-            currentSong = index;
-            loadSong();
-        };
-
-        list.appendChild(div);
+        resultsList.appendChild(div);
     });
 
-    document.getElementById("songCount").innerText = songs.length + " songs";
+    resultsContainer.style.display = 'block';
 }
 
-/* Quote Rotation */
-let quoteIndex = 0;
-setInterval(()=>{
-    const quote = document.getElementById("quote");
-    quote.classList.add("fade");
+function closeSearchResults() {
+    document.getElementById('searchResultsContainer').style.display = 'none';
+}
 
-    setTimeout(()=>{
-        quoteIndex++;
-        if(quoteIndex >= quotes.length){
-            quoteIndex = 0;
-        }
-        quote.innerText = '"' + quotes[quoteIndex] + '"';
-        quote.classList.remove("fade");
-    }, 500);
-}, 4000);
+function selectSearchResult(title, artist, videoId) {
+    const cleanTitle = title.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+    
+    const newSong = {
+        title: cleanTitle,
+        artist: artist,
+        youtube: videoId,
+        liked: false
+    };
 
-/* Load YouTube API */
-const tag = document.createElement("script");
-tag.src = "https://www.youtube.com/iframe_api";
-document.head.appendChild(tag);
+    // Check if song is already in queue
+    let existingIndex = songs.findIndex(s => s.youtube === videoId);
+    
+    if (existingIndex !== -1) {
+        selectSong(existingIndex);
+    } else {
+        songs.unshift(newSong);
+        saveSongsToStorage();
+        sortSongs();
+        selectSong(0);
+    }
 
-renderSongs();
+    closeSearchResults();
+    document.getElementById('search').value = "";
+}
 </script>
 
 </body>
