@@ -512,7 +512,7 @@ button.play:hover{
 }
 
 .search{
-    flex: 1;
+    width: 100%;
     padding:12px 16px;
     background:rgba(255,255,255,.05);
     border:1px solid var(--border);
@@ -525,21 +525,6 @@ button.play:hover{
 .search:focus {
     border-color: var(--accent);
     box-shadow: 0 0 10px rgba(255,54,95,0.2);
-}
-
-.search-btn {
-    padding: 0 18px;
-    background: var(--accent);
-    border: none;
-    border-radius: 12px;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
-}
-
-.search-btn:hover {
-    background: #ff1f4c;
 }
 
 /* Suggestions Dropdown Overlay */
@@ -852,15 +837,14 @@ footer{
                 class="search"
                 type="text"
                 id="search"
-                placeholder="Search any song on YouTube..."
-                onkeypress="if(event.key === 'Enter') fetchSuggestions()"
+                placeholder="Type to search songs live..."
+                oninput="onSearchInput(this.value)"
             >
-            <button class="search-btn" onclick="fetchSuggestions()">Search</button>
 
-            <!-- Suggestions Overlay -->
+            <!-- Live Suggestions Overlay -->
             <div class="suggestions-container" id="suggestionsContainer">
                 <div class="suggestions-header">
-                    <span>SUGGESTIONS</span>
+                    <span>LIVE SUGGESTIONS</span>
                     <button class="close-sug-btn" onclick="hideSuggestions()">✕</button>
                 </div>
                 <div id="suggestionsList"></div>
@@ -891,7 +875,7 @@ footer{
 <script>
 const YOUTUBE_API_KEY = "AIzaSyBLoglvlTn9aZfi_kg-O31Xy1wqktmvDno"; 
 
-// Default Songs Retained
+// Default Songs
 const defaultSongs = [
     { title:"Dreams", artist:"Amber", youtube:"fxA7rFlmmf4", liked: false },
     { title:"Hamari Adhuri Kahani", artist:"Arijit Singh", youtube:"TxT0KZ-EdLs", liked: false },
@@ -926,6 +910,7 @@ let isPlaying = false;
 let progressTimer;
 let isMuted = false;
 let currentVolume = 100;
+let searchTimeout = null;
 
 function saveSongsToStorage() {
     localStorage.setItem("afterus_songs", JSON.stringify(songs));
@@ -1168,11 +1153,23 @@ function toggleMute() {
     }
 }
 
-/* Fetch Suggestions on Search */
-async function fetchSuggestions() {
-    const query = document.getElementById('search').value.trim();
-    if (!query) return;
+/* Live Instant Suggestions on Typing */
+function onSearchInput(query) {
+    clearTimeout(searchTimeout);
+    query = query.trim();
 
+    if (!query) {
+        hideSuggestions();
+        return;
+    }
+
+    // Debounce to prevent over-querying API while fast typing
+    searchTimeout = setTimeout(() => {
+        fetchLiveSuggestions(query);
+    }, 300);
+}
+
+async function fetchLiveSuggestions(query) {
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}&maxResults=5`;
 
     try {
@@ -1182,11 +1179,10 @@ async function fetchSuggestions() {
         if (data.items && data.items.length > 0) {
             renderSuggestions(data.items);
         } else {
-            alert('No matching songs found.');
+            hideSuggestions();
         }
     } catch (err) {
-        console.error('API Search Error:', err);
-        alert('Could not search right now.');
+        console.error('Live Search Error:', err);
     }
 }
 
