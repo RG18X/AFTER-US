@@ -94,13 +94,13 @@ header{
 
 /* Hero */
 .hero{
-    min-height:45vh;
+    min-height:35vh;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     text-align:center;
-    padding:40px 20px 20px;
+    padding:30px 20px 10px;
 }
 
 .badge{
@@ -110,7 +110,7 @@ header{
     color:#aaa;
     font-size:11px;
     letter-spacing:3px;
-    margin-bottom:25px;
+    margin-bottom:15px;
     background:rgba(255,255,255,.03);
     animation: pulseBadge 3s infinite ease-in-out;
 }
@@ -121,9 +121,9 @@ header{
 }
 
 .hero h1{
-    font-size:clamp(45px,8vw,100px);
+    font-size:clamp(35px,6vw,80px);
     line-height:.9;
-    letter-spacing:-4px;
+    letter-spacing:-3px;
     max-width:1100px;
 }
 
@@ -132,31 +132,18 @@ header{
 }
 
 .hero p{
-    margin-top:20px;
+    margin-top:15px;
     color:#888;
     max-width:550px;
-    line-height:1.7;
-    font-size:15px;
-}
-
-.scroll{
-    margin-top:30px;
-    font-size:11px;
-    color:#555;
-    letter-spacing:3px;
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-    40% {transform: translateY(-8px);}
-    60% {transform: translateY(-4px);}
+    line-height:1.6;
+    font-size:14px;
 }
 
 /* Main Container */
 .container{
     width:min(1200px,92%);
     margin:auto;
+    padding-top:20px;
 }
 
 /* Player Layout */
@@ -193,7 +180,7 @@ header{
 /* Audio Cover / Vinyl Disc */
 .audio-cover-wrapper{
     width:100%;
-    max-width:280px;
+    max-width:240px;
     aspect-ratio:1/1;
     border-radius:50%;
     background:radial-gradient(circle, #222 0%, #0a0a0a 70%, #000 100%);
@@ -203,13 +190,13 @@ header{
     align-items:center;
     justify-content:center;
     position:relative;
-    margin:15px 0 25px;
+    margin:10px 0 20px;
     transition: box-shadow 0.5s ease;
 }
 
 .disc-center{
-    width:85px;
-    height:85px;
+    width:75px;
+    height:75px;
     border-radius:50%;
     background:radial-gradient(circle, var(--accent) 0%, #900c27 100%);
     border:6px solid #111;
@@ -217,12 +204,11 @@ header{
     align-items:center;
     justify-content:center;
     color:#fff;
-    font-size:26px;
+    font-size:24px;
     box-shadow:0 0 20px var(--accent-glow);
     z-index: 2;
 }
 
-/* Equalizer Bars Effect */
 .equalizer {
     display: flex;
     align-items: flex-end;
@@ -289,7 +275,7 @@ header{
 
 .now-playing h2{
     margin-top:6px;
-    font-size:24px;
+    font-size:22px;
     transition: color 0.3s;
 }
 
@@ -323,7 +309,7 @@ header{
 /* Progress Bar & Timing */
 .progress-container {
     width: 100%;
-    margin-top: 20px;
+    margin-top: 15px;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -337,11 +323,6 @@ header{
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: height 0.2s;
-}
-
-.progress-bar-wrapper:hover {
-    height: 8px;
 }
 
 .progress-fill {
@@ -358,7 +339,6 @@ header{
     justify-content: space-between;
     font-size: 11px;
     color: #777;
-    font-variant-numeric: tabular-nums;
 }
 
 /* Volume Control */
@@ -376,15 +356,6 @@ header{
     color: #888;
     cursor: pointer;
     font-size: 14px;
-    padding: 0;
-    width: auto;
-    height: auto;
-}
-
-.volume-btn:hover {
-    color: #fff;
-    background: none;
-    transform: none;
 }
 
 .volume-slider {
@@ -393,7 +364,7 @@ header{
     width: 100%;
     height: 5px;
     border-radius: 5px;
-    background: linear-gradient(to right, var(--accent) 100%, rgba(255, 255, 255, 0.15) 100%);
+    background: rgba(255, 255, 255, 0.15);
     outline: none;
     cursor: pointer;
 }
@@ -406,33 +377,20 @@ header{
     border-radius: 50%;
     background: #fff;
     cursor: pointer;
-    box-shadow: 0 0 8px var(--accent-glow);
-    transition: transform 0.1s;
-}
-
-.volume-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.3);
 }
 
 /* Quotes */
 .quote{
-    margin:12px 0;
-    min-height:50px;
+    margin:10px 0;
+    min-height:45px;
     display:flex;
     align-items:center;
     justify-content:center;
     text-align:center;
-    padding:8px;
+    padding:5px;
     color:#aaa;
-    font-size:13px;
-    line-height:1.5;
+    font-size:12px;
     font-style:italic;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.quote.fade{
-    opacity:0;
-    transform:translateY(8px);
 }
 
 /* Play Controls */
@@ -450,8 +408,8 @@ button.ctrl-btn{
     cursor:pointer;
     color:white;
     background:rgba(255,255,255,.07);
-    width:48px;
-    height:48px;
+    width:45px;
+    height:45px;
     border-radius:50%;
     transition: all 0.2s ease;
     font-size:16px;
@@ -467,22 +425,16 @@ button.ctrl-btn:hover{
 
 button.play{
     background:var(--accent);
-    width:62px;
-    height:62px;
+    width:58px;
+    height:58px;
     font-size:20px;
     box-shadow:0 0 20px var(--accent-glow);
 }
 
-button.play:hover{
-    background: #ff1f4c;
-    transform:scale(1.1);
-    box-shadow:0 0 30px var(--accent-glow);
-}
-
-/* Queue List */
+/* Queue List & Search */
 .queue-card{
     padding:25px;
-    max-height:620px;
+    height:620px;
     display:flex;
     flex-direction:column;
     position: relative;
@@ -492,7 +444,7 @@ button.play:hover{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:18px;
+    margin-bottom:15px;
 }
 
 .queue-title h3{
@@ -505,10 +457,8 @@ button.play:hover{
 }
 
 .search-box-wrapper {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 15px;
     position: relative;
+    margin-bottom: 15px;
 }
 
 .search{
@@ -519,27 +469,26 @@ button.play:hover{
     border-radius:12px;
     outline:none;
     color:white;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition: border-color 0.3s;
 }
 
 .search:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 10px rgba(255,54,95,0.2);
 }
 
 /* Suggestions Dropdown Overlay */
 .suggestions-container {
     position: absolute;
-    top: 50px;
+    top: 48px;
     left: 0;
     right: 0;
     background: #121212;
-    border: 1px solid rgba(255, 54, 95, 0.4);
+    border: 1px solid var(--accent);
     border-radius: 12px;
-    z-index: 50;
-    max-height: 250px;
+    z-index: 100;
+    max-height: 260px;
     overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.9);
     display: none;
 }
 
@@ -547,8 +496,8 @@ button.play:hover{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 14px;
-    font-size: 11px;
+    padding: 8px 12px;
+    font-size: 10px;
     color: var(--accent);
     font-weight: bold;
     border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -561,12 +510,8 @@ button.play:hover{
     cursor: pointer;
 }
 
-.close-sug-btn:hover {
-    color: #fff;
-}
-
 .sug-item {
-    padding: 10px 14px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -576,7 +521,7 @@ button.play:hover{
 }
 
 .sug-item:hover {
-    background: rgba(255, 54, 95, 0.15);
+    background: rgba(255, 54, 95, 0.2);
 }
 
 .sug-item-info {
@@ -617,7 +562,7 @@ button.play:hover{
     font-size: 10px;
     color: var(--accent);
     letter-spacing: 1.5px;
-    margin: 10px 0 6px 4px;
+    margin: 12px 0 6px 4px;
     font-weight: bold;
     text-transform: uppercase;
 }
@@ -649,7 +594,7 @@ button.play:hover{
 
 .song-number{
     color:#555;
-    width:22px;
+    width:20px;
     font-size:12px;
     font-weight: 600;
 }
@@ -665,7 +610,6 @@ button.play:hover{
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
-    transition: color 0.2s;
 }
 
 .song-info span{
@@ -683,30 +627,8 @@ button.play:hover{
     transition: color 0.2s, transform 0.2s;
 }
 
-.item-like-btn:hover {
-    transform: scale(1.2);
-}
-
 .item-like-btn.liked {
     color: var(--accent);
-}
-
-/* About Section */
-.about{
-    text-align:center;
-    padding:40px 20px 80px;
-}
-
-.about h2{
-    font-size:32px;
-    margin-bottom:15px;
-}
-
-.about p{
-    color:#777;
-    max-width:600px;
-    margin:auto;
-    line-height:1.8;
 }
 
 /* Footer & Credits */
@@ -727,21 +649,14 @@ footer{
     color: var(--accent);
     text-decoration: none;
     font-weight: 600;
-    transition: color 0.2s, text-shadow 0.2s;
 }
 
-.developer-credit a:hover {
-    color: #fff;
-    text-shadow: 0 0 8px var(--accent-glow);
-}
-
-/* Mobile Responsiveness */
 @media(max-width:850px){
     header{ padding:18px 5%; }
     .status{ display:none; }
-    .hero{ min-height:40vh; padding-top:30px; }
+    .hero{ min-height:30vh; }
     .player-section{ grid-template-columns:1fr; }
-    .audio-cover-wrapper{ max-width:220px; }
+    .audio-cover-wrapper{ max-width:200px; }
     .volume-container { width: 80%; }
     footer { justify-content: center; text-align: center; }
 }
@@ -767,10 +682,8 @@ footer{
     <h1>Some songs<br><span>understand</span> you.</h1>
     <p>
         Maybe you don't need another person to talk to.
-        Maybe you just need a song that understands
-        exactly what you're feeling.
+        Maybe you just need a song that understands.
     </p>
-    <div class="scroll">SCROLL TO LISTEN ↓</div>
 </section>
 
 <main class="container">
@@ -779,16 +692,12 @@ footer{
     <!-- AUDIO PLAYER -->
     <div class="player-card">
 
-        <!-- Hidden YouTube iFrame (Audio Only Mode) -->
         <div class="hidden-player">
             <div id="player"></div>
         </div>
 
-        <!-- Audio Disc UI -->
         <div class="audio-cover-wrapper" id="discCover">
             <div class="disc-center">♡</div>
-            
-            <!-- Animated Equalizer -->
             <div class="equalizer" id="equalizer">
                 <div class="eq-bar"></div>
                 <div class="eq-bar"></div>
@@ -799,12 +708,11 @@ footer{
 
         <div class="now-playing">
             <button class="like-main-btn" id="likeMainBtn" onclick="toggleCurrentLike()">♡</button>
-            <small>NOW PLAYING (AUDIO)</small>
+            <small>NOW PLAYING</small>
             <h2 id="currentTitle">Dreams</h2>
             <p id="currentArtist">Amber</p>
         </div>
 
-        <!-- Progress Bar & Timing -->
         <div class="progress-container">
             <div class="progress-bar-wrapper" id="progressWrapper" onclick="seekSong(event)">
                 <div class="progress-fill" id="progressFill"></div>
@@ -819,14 +727,12 @@ footer{
             "Some people leave, but their memories don't."
         </div>
 
-        <!-- Play Controls -->
         <div class="controls">
             <button class="ctrl-btn" onclick="previousSong()" title="Previous">↶</button>
             <button class="ctrl-btn play" onclick="togglePlay()" id="playBtn">▶</button>
             <button class="ctrl-btn" onclick="nextSong()" title="Next">↷</button>
         </div>
 
-        <!-- Volume Control -->
         <div class="volume-container">
             <button class="volume-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
             <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100" oninput="changeVolume(this.value)">
@@ -834,7 +740,7 @@ footer{
 
     </div>
 
-    <!-- QUEUE -->
+    <!-- QUEUE & SEARCH -->
     <div class="queue-card">
         <div class="queue-title">
             <h3>Broken Playlist</h3>
@@ -846,11 +752,11 @@ footer{
                 class="search"
                 type="text"
                 id="search"
-                placeholder="Type to search songs live..."
+                placeholder="Type song name to search live..."
                 oninput="onSearchInput(this.value)"
             >
 
-            <!-- Live Suggestions Overlay -->
+            <!-- LIVE SEARCH SUGGESTIONS -->
             <div class="suggestions-container" id="suggestionsContainer">
                 <div class="suggestions-header">
                     <span>LIVE SUGGESTIONS</span>
@@ -860,18 +766,10 @@ footer{
             </div>
         </div>
 
+        <!-- PERMANENT SONG LIST -->
         <div class="song-list" id="songList"></div>
     </div>
 
-</section>
-
-<section class="about">
-    <h2>For the nights that feel too long.</h2>
-    <p>
-        Put your headphones on. Choose a song.
-        Let the music say the things you couldn't.
-        No explanations. No pretending. Just music.
-    </p>
 </section>
 </main>
 
@@ -902,15 +800,11 @@ let songs = JSON.parse(localStorage.getItem("afterus_songs")) || defaultSongs;
 
 const quotes = [
     "Some people leave, but their memories don't.",
-    "It hurts when the person you can'forget forgets you.",
+    "It hurts when the person you can't forget forgets you.",
     "Maybe we were meant to be a lesson, not a lifetime.",
     "You stopped talking. I started understanding.",
     "Sometimes silence says everything.",
-    "The hardest goodbye is the one you never got to say.",
-    "I miss what we were, not what we became.",
-    "Some memories have no expiry date.",
-    "You were my favorite chapter. I just wish it had a better ending.",
-    "Not every love story gets the ending it deserves."
+    "The hardest goodbye is the one you never got to say."
 ];
 
 let currentSongIndex = 0;
@@ -925,6 +819,7 @@ function saveSongsToStorage() {
     localStorage.setItem("afterus_songs", JSON.stringify(songs));
 }
 
+// Master Active Playlist ordering (Liked Songs FIRST, then Others)
 function getDisplayList() {
     const likedSongs = songs.filter(s => s.liked);
     const unlikedSongs = songs.filter(s => !s.liked);
@@ -935,12 +830,7 @@ function onYouTubeIframeAPIReady(){
     const { combinedList } = getDisplayList();
     player = new YT.Player('player',{
         videoId: combinedList[currentSongIndex].youtube,
-        playerVars:{
-            autoplay:0,
-            controls:0,
-            rel:0,
-            modestbranding:1
-        },
+        playerVars:{ autoplay:0, controls:0, rel:0, modestbranding:1 },
         events:{
             onReady:onPlayerReady,
             onStateChange:onPlayerStateChange
@@ -972,7 +862,6 @@ function updatePlayStateUI() {
     document.getElementById('playBtn').innerText = isPlaying ? "⏸" : "▶";
     const disc = document.getElementById('discCover');
     const equalizer = document.getElementById('equalizer');
-    
     if (isPlaying) {
         disc.classList.add('playing');
         equalizer.classList.add('active');
@@ -988,7 +877,7 @@ function renderSongs(){
 
     const { likedSongs, unlikedSongs } = getDisplayList();
 
-    // Section 1: Liked Songs (Fixed at Top)
+    // SECTION 1: LIKED SONGS (ALWAYS ON TOP)
     if (likedSongs.length > 0) {
         const likedHeader = document.createElement('div');
         likedHeader.className = 'section-label';
@@ -996,22 +885,20 @@ function renderSongs(){
         list.appendChild(likedHeader);
 
         likedSongs.forEach((song) => {
-            const globalIndex = songs.findIndex(s => s.youtube === song.youtube);
-            const div = createSongElement(song, globalIndex);
+            const div = createSongElement(song);
             list.appendChild(div);
         });
     }
 
-    // Section 2: All Songs / Search Queue
+    // SECTION 2: ALL SONGS / NEW SEARCHED SONGS
     if (unlikedSongs.length > 0) {
         const allHeader = document.createElement('div');
         allHeader.className = 'section-label';
-        allHeader.innerText = ' All Songs';
+        allHeader.innerText = '♫ Songs Playlist';
         list.appendChild(allHeader);
 
         unlikedSongs.forEach((song) => {
-            const globalIndex = songs.findIndex(s => s.youtube === song.youtube);
-            const div = createSongElement(song, globalIndex);
+            const div = createSongElement(song);
             list.appendChild(div);
         });
     }
@@ -1019,18 +906,21 @@ function renderSongs(){
     document.getElementById('songCount').innerText = `${songs.length} songs`;
 }
 
-function createSongElement(song, globalIndex) {
+function createSongElement(song) {
     const { combinedList } = getDisplayList();
     const currentActiveSong = combinedList[currentSongIndex];
     const isCurrentPlaying = currentActiveSong && currentActiveSong.youtube === song.youtube;
 
     const div = document.createElement('div');
     div.className = `song ${isCurrentPlaying ? 'active' : ''}`;
+    
     div.onclick = (e) => {
         if (!e.target.classList.contains('item-like-btn')) {
             playByVideoId(song.youtube);
         }
     };
+
+    const globalIndex = songs.findIndex(s => s.youtube === song.youtube);
 
     div.innerHTML = `
         <div class="song-number">▶</div>
@@ -1061,12 +951,7 @@ function playByVideoId(videoId) {
 
 function togglePlay(){
     if(!player) return;
-
-    if(isPlaying){
-        player.pauseVideo();
-    } else {
-        player.playVideo();
-    }
+    isPlaying ? player.pauseVideo() : player.playVideo();
 }
 
 function nextSong(){
@@ -1118,16 +1003,10 @@ function toggleLike(event, globalIndex) {
 
 function changeQuote(){
     const quoteEl = document.getElementById('quote');
-    quoteEl.classList.add('fade');
-    
-    setTimeout(() => {
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        quoteEl.innerText = `"${randomQuote}"`;
-        quoteEl.classList.remove('fade');
-    }, 500);
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    quoteEl.innerText = `"${randomQuote}"`;
 }
 
-/* Progress Bar Logic */
 function startProgressBar() {
     stopProgressBar();
     progressTimer = setInterval(() => {
@@ -1153,14 +1032,10 @@ function seekSong(event) {
     if (!player || !player.getDuration) return;
     const wrapper = document.getElementById('progressWrapper');
     const rect = wrapper.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const width = rect.width;
     const duration = player.getDuration();
-    
     if (duration > 0) {
-        const seekTime = (clickX / width) * duration;
+        const seekTime = ((event.clientX - rect.left) / rect.width) * duration;
         player.seekTo(seekTime, true);
-        document.getElementById('progressFill').style.width = `${(clickX / width) * 100}%`;
     }
 }
 
@@ -1170,19 +1045,9 @@ function formatTime(seconds) {
     return `${min}:${sec < 10 ? '0' : ''}${sec}`;
 }
 
-/* Volume Control */
 function changeVolume(val) {
     currentVolume = val;
-    if (player && player.setVolume) {
-        player.setVolume(val);
-    }
-    if (val == 0) {
-        isMuted = true;
-        document.getElementById('muteBtn').innerText = '🔇';
-    } else {
-        isMuted = false;
-        document.getElementById('muteBtn').innerText = '🔊';
-    }
+    if (player && player.setVolume) player.setVolume(val);
     updateVolumeSliderBackground(val);
 }
 
@@ -1197,18 +1062,14 @@ function toggleMute() {
         player.unMute();
         isMuted = false;
         document.getElementById('muteBtn').innerText = '🔊';
-        document.getElementById('volumeSlider').value = currentVolume;
-        updateVolumeSliderBackground(currentVolume);
     } else {
         player.mute();
         isMuted = true;
         document.getElementById('muteBtn').innerText = '🔇';
-        document.getElementById('volumeSlider').value = 0;
-        updateVolumeSliderBackground(0);
     }
 }
 
-/* Live Instant Suggestions on Typing */
+/* LIVE SEARCH & INSTANT PLAY */
 function onSearchInput(query) {
     clearTimeout(searchTimeout);
     query = query.trim();
@@ -1252,7 +1113,7 @@ function renderSuggestions(items) {
 
         const div = document.createElement('div');
         div.className = 'sug-item';
-        div.onclick = () => playSelectedSuggestion(title, artist, videoId);
+        div.onclick = () => playAndAddSuggestion(title, artist, videoId);
 
         div.innerHTML = `
             <div class="sug-item-info">
@@ -1271,19 +1132,23 @@ function hideSuggestions() {
     document.getElementById('suggestionsContainer').style.display = 'none';
 }
 
-function playSelectedSuggestion(title, artist, videoId) {
+function playAndAddSuggestion(title, artist, videoId) {
     const newSong = { title, artist, youtube: videoId, liked: false };
     
+    // Check if exists
     let existingIndex = songs.findIndex(s => s.youtube === videoId);
 
     if (existingIndex === -1) {
-        songs.unshift(newSong);
+        // Add new song to list
+        songs.push(newSong);
         saveSongsToStorage();
     }
 
-    playByVideoId(videoId);
     hideSuggestions();
     document.getElementById('search').value = "";
+    
+    // Immediately play the song
+    playByVideoId(videoId);
 }
 </script>
 
