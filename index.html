@@ -613,6 +613,15 @@ button.play:hover{
     border-radius: 4px;
 }
 
+.section-label {
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 1.5px;
+    margin: 10px 0 6px 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
 .song{
     padding:12px 14px;
     border-radius:12px;
@@ -893,7 +902,7 @@ let songs = JSON.parse(localStorage.getItem("afterus_songs")) || defaultSongs;
 
 const quotes = [
     "Some people leave, but their memories don't.",
-    "It hurts when the person you can't forget forgets you.",
+    "It hurts when the person you can'forget forgets you.",
     "Maybe we were meant to be a lesson, not a lifetime.",
     "You stopped talking. I started understanding.",
     "Sometimes silence says everything.",
@@ -904,7 +913,7 @@ const quotes = [
     "Not every love story gets the ending it deserves."
 ];
 
-let currentSong = 0;
+let currentSongIndex = 0;
 let player;
 let isPlaying = false;
 let progressTimer;
@@ -916,19 +925,16 @@ function saveSongsToStorage() {
     localStorage.setItem("afterus_songs", JSON.stringify(songs));
 }
 
-function sortSongs() {
-    const currentPlayingVideoId = songs[currentSong] ? songs[currentSong].youtube : null;
-    songs.sort((a, b) => (b.liked === true ? 1 : 0) - (a.liked === true ? 1 : 0));
-    if (currentPlayingVideoId) {
-        currentSong = songs.findIndex(s => s.youtube === currentPlayingVideoId);
-        if (currentSong === -1) currentSong = 0;
-    }
+function getDisplayList() {
+    const likedSongs = songs.filter(s => s.liked);
+    const unlikedSongs = songs.filter(s => !s.liked);
+    return { likedSongs, unlikedSongs, combinedList: [...likedSongs, ...unlikedSongs] };
 }
 
 function onYouTubeIframeAPIReady(){
-    sortSongs();
+    const { combinedList } = getDisplayList();
     player = new YT.Player('player',{
-        videoId:songs[currentSong].youtube,
+        videoId: combinedList[currentSongIndex].youtube,
         playerVars:{
             autoplay:0,
             controls:0,
@@ -980,38 +986,77 @@ function renderSongs(){
     const list = document.getElementById('songList');
     list.innerHTML = "";
 
-    songs.forEach((song, i) => {
-        const div = document.createElement('div');
-        div.className = `song ${i === currentSong ? 'active' : ''}`;
-        div.onclick = (e) => {
-            if (!e.target.classList.contains('item-like-btn')) {
-                selectSong(i);
-            }
-        };
+    const { likedSongs, unlikedSongs } = getDisplayList();
 
-        div.innerHTML = `
-            <div class="song-number">${(i + 1).toString().padStart(2, '0')}</div>
-            <div class="song-info">
-                <strong>${song.title}</strong>
-                <span>${song.artist}</span>
-            </div>
-            <button class="item-like-btn ${song.liked ? 'liked' : ''}" onclick="toggleLike(event, ${i})">
-                ${song.liked ? '♥' : '♡'}
-            </button>
-        `;
+    // Section 1: Liked Songs (Fixed at Top)
+    if (likedSongs.length > 0) {
+        const likedHeader = document.createElement('div');
+        likedHeader.className = 'section-label';
+        likedHeader.innerText = '♥ Liked Songs';
+        list.appendChild(likedHeader);
 
-        list.appendChild(div);
-    });
+        likedSongs.forEach((song) => {
+            const globalIndex = songs.findIndex(s => s.youtube === song.youtube);
+            const div = createSongElement(song, globalIndex);
+            list.appendChild(div);
+        });
+    }
+
+    // Section 2: All Songs / Search Queue
+    if (unlikedSongs.length > 0) {
+        const allHeader = document.createElement('div');
+        allHeader.className = 'section-label';
+        allHeader.innerText = ' All Songs';
+        list.appendChild(allHeader);
+
+        unlikedSongs.forEach((song) => {
+            const globalIndex = songs.findIndex(s => s.youtube === song.youtube);
+            const div = createSongElement(song, globalIndex);
+            list.appendChild(div);
+        });
+    }
 
     document.getElementById('songCount').innerText = `${songs.length} songs`;
 }
 
-function selectSong(index){
-    currentSong = index;
-    player.loadVideoById(songs[currentSong].youtube);
-    updateNowPlaying();
-    renderSongs();
-    changeQuote();
+function createSongElement(song, globalIndex) {
+    const { combinedList } = getDisplayList();
+    const currentActiveSong = combinedList[currentSongIndex];
+    const isCurrentPlaying = currentActiveSong && currentActiveSong.youtube === song.youtube;
+
+    const div = document.createElement('div');
+    div.className = `song ${isCurrentPlaying ? 'active' : ''}`;
+    div.onclick = (e) => {
+        if (!e.target.classList.contains('item-like-btn')) {
+            playByVideoId(song.youtube);
+        }
+    };
+
+    div.innerHTML = `
+        <div class="song-number">▶</div>
+        <div class="song-info">
+            <strong>${song.title}</strong>
+            <span>${song.artist}</span>
+        </div>
+        <button class="item-like-btn ${song.liked ? 'liked' : ''}" onclick="toggleLike(event, ${globalIndex})">
+            ${song.liked ? '♥' : '♡'}
+        </button>
+    `;
+
+    return div;
+}
+
+function playByVideoId(videoId) {
+    const { combinedList } = getDisplayList();
+    const foundIndex = combinedList.findIndex(s => s.youtube === videoId);
+
+    if (foundIndex !== -1) {
+        currentSongIndex = foundIndex;
+        player.loadVideoById(videoId);
+        updateNowPlaying();
+        renderSongs();
+        changeQuote();
+    }
 }
 
 function togglePlay(){
@@ -1025,17 +1070,22 @@ function togglePlay(){
 }
 
 function nextSong(){
-    currentSong = (currentSong + 1) % songs.length;
-    selectSong(currentSong);
+    const { combinedList } = getDisplayList();
+    currentSongIndex = (currentSongIndex + 1) % combinedList.length;
+    playByVideoId(combinedList[currentSongIndex].youtube);
 }
 
 function previousSong(){
-    currentSong = (currentSong - 1 + songs.length) % songs.length;
-    selectSong(currentSong);
+    const { combinedList } = getDisplayList();
+    currentSongIndex = (currentSongIndex - 1 + combinedList.length) % combinedList.length;
+    playByVideoId(combinedList[currentSongIndex].youtube);
 }
 
 function updateNowPlaying(){
-    const song = songs[currentSong];
+    const { combinedList } = getDisplayList();
+    const song = combinedList[currentSongIndex];
+    if (!song) return;
+
     document.getElementById('currentTitle').innerText = song.title;
     document.getElementById('currentArtist').innerText = song.artist;
     
@@ -1045,18 +1095,23 @@ function updateNowPlaying(){
 }
 
 function toggleCurrentLike() {
-    songs[currentSong].liked = !songs[currentSong].liked;
-    saveSongsToStorage();
-    sortSongs();
-    updateNowPlaying();
-    renderSongs();
+    const { combinedList } = getDisplayList();
+    const activeSong = combinedList[currentSongIndex];
+    if (!activeSong) return;
+
+    const globalIndex = songs.findIndex(s => s.youtube === activeSong.youtube);
+    if (globalIndex !== -1) {
+        songs[globalIndex].liked = !songs[globalIndex].liked;
+        saveSongsToStorage();
+        updateNowPlaying();
+        renderSongs();
+    }
 }
 
-function toggleLike(event, index) {
+function toggleLike(event, globalIndex) {
     event.stopPropagation();
-    songs[index].liked = !songs[index].liked;
+    songs[globalIndex].liked = !songs[globalIndex].liked;
     saveSongsToStorage();
-    sortSongs();
     updateNowPlaying();
     renderSongs();
 }
@@ -1163,7 +1218,6 @@ function onSearchInput(query) {
         return;
     }
 
-    // Debounce to prevent over-querying API while fast typing
     searchTimeout = setTimeout(() => {
         fetchLiveSuggestions(query);
     }, 300);
@@ -1222,15 +1276,12 @@ function playSelectedSuggestion(title, artist, videoId) {
     
     let existingIndex = songs.findIndex(s => s.youtube === videoId);
 
-    if (existingIndex !== -1) {
-        selectSong(existingIndex);
-    } else {
+    if (existingIndex === -1) {
         songs.unshift(newSong);
         saveSongsToStorage();
-        sortSongs();
-        selectSong(0);
     }
 
+    playByVideoId(videoId);
     hideSuggestions();
     document.getElementById('search').value = "";
 }
