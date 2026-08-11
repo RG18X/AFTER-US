@@ -368,9 +368,9 @@ header{
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 4px;
+    height: 5px;
     border-radius: 5px;
-    background: rgba(255, 255, 255, 0.15);
+    background: linear-gradient(to right, var(--accent) 100%, rgba(255, 255, 255, 0.15) 100%);
     outline: none;
     cursor: pointer;
 }
@@ -381,7 +381,7 @@ header{
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: var(--accent);
+    background: #fff;
     cursor: pointer;
     box-shadow: 0 0 8px var(--accent-glow);
     transition: transform 0.1s;
@@ -580,14 +580,30 @@ button.play:hover{
     line-height:1.8;
 }
 
-/* Footer */
+/* Footer & Credits */
 footer{
     border-top:1px solid rgba(255,255,255,.06);
-    padding:30px;
-    text-align:center;
-    color:#444;
+    padding:22px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color:#555;
     font-size:11px;
     letter-spacing:1px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.developer-credit a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s, text-shadow 0.2s;
+}
+
+.developer-credit a:hover {
+    color: #fff;
+    text-shadow: 0 0 8px var(--accent-glow);
 }
 
 /* Mobile Responsiveness */
@@ -598,6 +614,7 @@ footer{
     .player-section{ grid-template-columns:1fr; }
     .audio-cover-wrapper{ max-width:220px; }
     .volume-container { width: 80%; }
+    footer { justify-content: center; text-align: center; }
 }
 </style>
 </head>
@@ -718,7 +735,8 @@ footer{
 </main>
 
 <footer>
-    AFTER US — MUSIC FOR BROKEN HEARTS
+    <div>AFTER US — MUSIC FOR BROKEN HEARTS</div>
+    <div class="developer-credit">Developed by - <a href="https://rg18x.github.io/Profile/" target="_blank" rel="noopener noreferrer">RG18</a></div>
 </footer>
 
 <script>
@@ -819,6 +837,7 @@ function onYouTubeIframeAPIReady(){
 function onPlayerReady(){
     updateNowPlaying();
     renderSongs();
+    updateVolumeSliderBackground(currentVolume);
 }
 
 function onPlayerStateChange(event){
@@ -949,6 +968,12 @@ function changeVolume(value) {
         player.setVolume(value);
     }
     updateMuteIcon(value);
+    updateVolumeSliderBackground(value);
+}
+
+function updateVolumeSliderBackground(value) {
+    const slider = document.getElementById("volumeSlider");
+    slider.style.background = `linear-gradient(to right, var(--accent) ${value}%, rgba(255, 255, 255, 0.15) ${value}%)`;
 }
 
 function toggleMute() {
@@ -958,11 +983,13 @@ function toggleMute() {
         player.unMute();
         player.setVolume(currentVolume);
         document.getElementById("volumeSlider").value = currentVolume;
+        updateVolumeSliderBackground(currentVolume);
         isMuted = false;
         updateMuteIcon(currentVolume);
     } else {
         player.mute();
         document.getElementById("volumeSlider").value = 0;
+        updateVolumeSliderBackground(0);
         isMuted = true;
         document.getElementById("muteBtn").innerText = "🔇";
     }
