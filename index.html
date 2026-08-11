@@ -94,7 +94,7 @@ header{
 
 /* Hero */
 .hero{
-    min-height:40vh;
+    min-height:45vh;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -190,7 +190,7 @@ header{
     position: relative;
 }
 
-/* Audio Disc UI */
+/* Audio Cover / Vinyl Disc */
 .audio-cover-wrapper{
     width:100%;
     max-width:280px;
@@ -262,6 +262,15 @@ header{
 
 @keyframes spin{
     100%{ transform:rotate(360deg); }
+}
+
+.hidden-player{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+    overflow:hidden;
 }
 
 .now-playing{
@@ -367,6 +376,15 @@ header{
     color: #888;
     cursor: pointer;
     font-size: 14px;
+    padding: 0;
+    width: auto;
+    height: auto;
+}
+
+.volume-btn:hover {
+    color: #fff;
+    background: none;
+    transform: none;
 }
 
 .volume-slider {
@@ -389,12 +407,17 @@ header{
     background: #fff;
     cursor: pointer;
     box-shadow: 0 0 8px var(--accent-glow);
+    transition: transform 0.1s;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
 }
 
 /* Quotes */
 .quote{
     margin:12px 0;
-    min-height:40px;
+    min-height:50px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -453,6 +476,7 @@ button.play{
 button.play:hover{
     background: #ff1f4c;
     transform:scale(1.1);
+    box-shadow:0 0 30px var(--accent-glow);
 }
 
 /* Queue List */
@@ -493,6 +517,7 @@ button.play:hover{
     border-radius:12px;
     outline:none;
     color:white;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .search:focus {
@@ -508,6 +533,11 @@ button.play:hover{
     color: white;
     cursor: pointer;
     font-weight: bold;
+    transition: background 0.2s;
+}
+
+.search-btn:hover {
+    background: #ff1f4c;
 }
 
 .song-list{
@@ -567,6 +597,7 @@ button.play:hover{
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
+    transition: color 0.2s;
 }
 
 .song-info span{
@@ -581,6 +612,11 @@ button.play:hover{
     font-size: 16px;
     cursor: pointer;
     padding: 4px;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.item-like-btn:hover {
+    transform: scale(1.2);
 }
 
 .item-like-btn.liked {
@@ -623,12 +659,19 @@ footer{
     color: var(--accent);
     text-decoration: none;
     font-weight: 600;
+    transition: color 0.2s, text-shadow 0.2s;
 }
 
+.developer-credit a:hover {
+    color: #fff;
+    text-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Mobile Responsiveness */
 @media(max-width:850px){
     header{ padding:18px 5%; }
     .status{ display:none; }
-    .hero{ min-height:35vh; padding-top:30px; }
+    .hero{ min-height:40vh; padding-top:30px; }
     .player-section{ grid-template-columns:1fr; }
     .audio-cover-wrapper{ max-width:220px; }
     .volume-container { width: 80%; }
@@ -668,13 +711,16 @@ footer{
     <!-- AUDIO PLAYER -->
     <div class="player-card">
 
-        <!-- Native Audio Element Engine -->
-        <audio id="audioPlayer" preload="auto"></audio>
+        <!-- Hidden YouTube iFrame (Audio Only Mode) -->
+        <div class="hidden-player">
+            <div id="player"></div>
+        </div>
 
         <!-- Audio Disc UI -->
         <div class="audio-cover-wrapper" id="discCover">
             <div class="disc-center">♡</div>
             
+            <!-- Animated Equalizer -->
             <div class="equalizer" id="equalizer">
                 <div class="eq-bar"></div>
                 <div class="eq-bar"></div>
@@ -685,9 +731,9 @@ footer{
 
         <div class="now-playing">
             <button class="like-main-btn" id="likeMainBtn" onclick="toggleCurrentLike()">♡</button>
-            <small>NOW PLAYING (PURE AUDIO)</small>
-            <h2 id="currentTitle">SoundHelix Song 1</h2>
-            <p id="currentArtist">SoundHelix</p>
+            <small>NOW PLAYING (AUDIO)</small>
+            <h2 id="currentTitle">Dreams</h2>
+            <p id="currentArtist">Amber</p>
         </div>
 
         <!-- Progress Bar & Timing -->
@@ -732,10 +778,10 @@ footer{
                 class="search"
                 type="text"
                 id="search"
-                placeholder="Search any music track online..."
-                onkeypress="if(event.key === 'Enter') fetchSongFromAudioAPI()"
+                placeholder="Search any song on YouTube..."
+                onkeypress="if(event.key === 'Enter') fetchSongFromYouTube()"
             >
-            <button class="search-btn" onclick="fetchSongFromAudioAPI()">Search</button>
+            <button class="search-btn" onclick="fetchSongFromYouTube()">Search</button>
         </div>
 
         <div class="song-list" id="songList"></div>
@@ -759,14 +805,19 @@ footer{
 </footer>
 
 <script>
-// Jamendo Free Music API Client ID
-const JAMENDO_CLIENT_ID = "56d30c95";
+const YOUTUBE_API_KEY = "AIzaSyBLoglvlTn9aZfi_kg-O31Xy1wqktmvDno"; 
 
 const defaultSongs = [
-    { title:"SoundHelix Chill 1", artist:"SoundHelix", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", liked: false },
-    { title:"SoundHelix Piano 2", artist:"SoundHelix", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", liked: false },
-    { title:"SoundHelix Beats 3", artist:"SoundHelix", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", liked: false },
-    { title:"SoundHelix Ambient 4", artist:"SoundHelix", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", liked: false }
+    { title:"Dreams", artist:"Amber", youtube:"fxA7rFlmmf4", liked: false },
+    { title:"Hamari Adhuri Kahani", artist:"Arijit Singh", youtube:"TxT0KZ-EdLs", liked: false },
+    { title:"Tera Ghata", artist:"Gajendra Verma", youtube:"gvwgw_QgxIg", liked: false },
+    { title:"Humnava Mere", artist:"Jubin Nautiyal", youtube:"8WKwJfYge7Q", liked: false },
+    { title:"Phir Bhi Tumko Chaahunga", artist:"Arijit Singh", youtube:"_A9pY8v4S00", liked: false },
+    { title:"Agar Tum Saath Ho", artist:"Alka Yagnik & Arijit Singh", youtube:"sK7riqg254H", liked: false },
+    { title:"Hawayein", artist:"Arijit Singh", youtube:"LR1Z4hqjjdg", liked: false },
+    { title:"Tujhe Kitna Chahne Lage", artist:"Arijit Singh", youtube:"0vA6jhqKwVA", liked: false },
+    { title:"Tum Hi Ho", artist:"Arijit Singh", youtube:"UNr0_O8L80g", liked: false },
+    { title:"Udaarian", artist:"Satinder Sartaaj", youtube:"9udS0mpi1L4", liked: false }
 ];
 
 // Load songs from LocalStorage or fallback to default
@@ -779,130 +830,130 @@ const quotes = [
     "You stopped talking. I started understanding.",
     "Sometimes silence says everything.",
     "The hardest goodbye is the one you never got to say.",
-    "I miss what we were, not what we became."
+    "I miss what we were, not what we became.",
+    "Some memories have no expiry date.",
+    "You were my favorite chapter. I just wish it had a better ending.",
+    "Not every love story gets the ending it deserves."
 ];
 
 let currentSong = 0;
-let audio = document.getElementById("audioPlayer");
+let player;
 let isPlaying = false;
+let progressTimer;
 let isMuted = false;
-let currentVolume = 1;
+let currentVolume = 100;
 
 function saveSongsToStorage() {
     localStorage.setItem("afterus_songs", JSON.stringify(songs));
 }
 
 function sortSongs() {
-    const currentPlayingSrc = songs[currentSong] ? songs[currentSong].src : null;
+    const currentPlayingVideoId = songs[currentSong] ? songs[currentSong].youtube : null;
     
-    // Liked songs move to top
+    // Sort: Liked songs first
     songs.sort((a, b) => (b.liked === true ? 1 : 0) - (a.liked === true ? 1 : 0));
     
-    if (currentPlayingSrc) {
-        currentSong = songs.findIndex(s => s.src === currentPlayingSrc);
+    // Maintain current playing song index
+    if (currentPlayingVideoId) {
+        currentSong = songs.findIndex(s => s.youtube === currentPlayingVideoId);
         if (currentSong === -1) currentSong = 0;
     }
 }
 
-function initPlayer() {
+function onYouTubeIframeAPIReady(){
     sortSongs();
-    loadSong(false);
-    
-    // Native HTML5 Audio Event Listeners for seamless background sync
-    audio.addEventListener("timeupdate", updateProgress);
-    audio.addEventListener("ended", nextSong);
-    
-    audio.addEventListener("play", () => {
-        isPlaying = true;
-        updateUIState();
-        setupMediaSession();
-    });
-
-    audio.addEventListener("pause", () => {
-        isPlaying = false;
-        updateUIState();
+    player = new YT.Player('player',{
+        videoId:songs[currentSong].youtube,
+        playerVars:{
+            autoplay:0,
+            controls:0,
+            rel:0,
+            modestbranding:1
+        },
+        events:{
+            onReady:onPlayerReady,
+            onStateChange:onPlayerStateChange
+        }
     });
 }
 
-function updateUIState() {
+function onPlayerReady(){
+    updateNowPlaying();
+    renderSongs();
+    updateVolumeSliderBackground(currentVolume);
+}
+
+function onPlayerStateChange(event){
     const disc = document.getElementById("discCover");
     const playBtn = document.getElementById("playBtn");
     const equalizer = document.getElementById("equalizer");
 
-    if (isPlaying) {
+    if(event.data === YT.PlayerState.PLAYING){
+        isPlaying = true;
         playBtn.innerHTML = "Ⅱ";
         disc.classList.add("playing");
         equalizer.classList.add("active");
+        startProgressLoop();
     } else {
+        isPlaying = false;
         playBtn.innerHTML = "▶";
         disc.classList.remove("playing");
         equalizer.classList.remove("active");
+        stopProgressLoop();
+    }
+
+    if(event.data === YT.PlayerState.ENDED){
+        nextSong();
     }
 }
 
-// Media Session API for Android Lockscreen Controls and Background Play
-function setupMediaSession() {
-    if ('mediaSession' in navigator) {
-        const song = songs[currentSong];
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: song.title,
-            artist: song.artist,
-            album: 'After Us — Broken Hearts',
-            artwork: [
-                { src: 'https://cdn-icons-png.flaticon.com/512/833/833472.png', sizes: '512x512', type: 'image/png' }
-            ]
-        });
+function togglePlay(){
+    if(!player) return;
 
-        navigator.mediaSession.setActionHandler('play', () => togglePlay());
-        navigator.mediaSession.setActionHandler('pause', () => togglePlay());
-        navigator.mediaSession.setActionHandler('previoustrack', () => previousSong());
-        navigator.mediaSession.setActionHandler('nexttrack', () => nextSong());
+    if(isPlaying){
+        player.pauseVideo();
+    }else{
+        player.playVideo();
     }
 }
 
-function togglePlay() {
-    if (!audio.src) return;
-
-    if (isPlaying) {
-        audio.pause();
-    } else {
-        audio.play().catch(e => console.log("User interaction required", e));
-    }
-}
-
-function nextSong() {
+function nextSong(){
     currentSong++;
-    if (currentSong >= songs.length) currentSong = 0;
-    loadSong(true);
+    if(currentSong >= songs.length){
+        currentSong = 0;
+    }
+    loadSong();
 }
 
-function previousSong() {
+function previousSong(){
     currentSong--;
-    if (currentSong < 0) currentSong = songs.length - 1;
-    loadSong(true);
+    if(currentSong < 0){
+        currentSong = songs.length - 1;
+    }
+    loadSong();
 }
 
-function loadSong(autoPlay = true) {
+function loadSong(){
     const song = songs[currentSong];
-    audio.src = song.src;
-    
+
+    if(!song.youtube || song.youtube.includes("VIDEO_ID")){
+        alert("Is song ka YouTube Video ID abhi add nahi kiya gaya.");
+        return;
+    }
+
+    player.loadVideoById(song.youtube);
+    updateNowPlaying();
+    renderSongs();
+    resetProgressBar();
+}
+
+function updateNowPlaying(){
+    const song = songs[currentSong];
     document.getElementById("currentTitle").innerText = song.title;
     document.getElementById("currentArtist").innerText = song.artist;
     
-    updateNowPlayingLikeBtn();
-    renderSongs();
-
-    if (autoPlay) {
-        audio.play().then(() => {
-            setupMediaSession();
-        }).catch(err => console.log("Playback error:", err));
-    }
-}
-
-function updateNowPlayingLikeBtn() {
-    const song = songs[currentSong];
     const likeBtn = document.getElementById("likeMainBtn");
-    if (song.liked) {
+    if(song.liked) {
         likeBtn.innerHTML = "♥";
         likeBtn.classList.add("liked");
     } else {
@@ -916,7 +967,7 @@ function toggleCurrentLike() {
     saveSongsToStorage();
     sortSongs();
     saveSongsToStorage();
-    updateNowPlayingLikeBtn();
+    updateNowPlaying();
     renderSongs();
 }
 
@@ -926,32 +977,36 @@ function toggleSongLike(index, event) {
     saveSongsToStorage();
     sortSongs();
     saveSongsToStorage();
-    updateNowPlayingLikeBtn();
+    updateNowPlaying();
     renderSongs();
 }
 
-/* Jamendo Music API - Online Direct MP3 Search */
-async function fetchSongFromAudioAPI() {
+/* YouTube Real-Time API Search */
+async function fetchSongFromYouTube() {
     const query = document.getElementById("search").value.trim();
     if (!query) return;
 
-    const url = `https://api.jamendo.com/v3.0/tracks/?client_id=${JAMENDO_CLIENT_ID}&format=json&limit=1&search=${encodeURIComponent(query)}`;
-
     try {
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
         const res = await fetch(url);
         const data = await res.json();
 
-        if (data.results && data.results.length > 0) {
-            const track = data.results[0];
+        if (data.items && data.items.length > 0) {
+            const item = data.items[0];
+            const videoId = item.id.videoId;
+            const title = item.snippet.title;
+            const artist = item.snippet.channelTitle;
+
             const newSong = {
-                title: track.name,
-                artist: track.artist_name,
-                src: track.audio, // Direct downloadable/streamable MP3
+                title: title,
+                artist: artist,
+                youtube: videoId,
                 liked: false
             };
 
-            const existingIndex = songs.findIndex(s => s.src === track.audio);
-            if (existingIndex !== -1) {
+            // Check if song already exists
+            const existingIndex = songs.findIndex(s => s.youtube === videoId);
+            if(existingIndex !== -1) {
                 currentSong = existingIndex;
             } else {
                 songs.unshift(newSong);
@@ -961,32 +1016,61 @@ async function fetchSongFromAudioAPI() {
             saveSongsToStorage();
             sortSongs();
             saveSongsToStorage();
-            loadSong(true);
+            loadSong();
+            player.playVideo();
             document.getElementById("search").value = "";
         } else {
-            alert("Song nahi mila! Kisi aur naam se search karein.");
+            alert("Song nahi mila! Kuch aur try karein.");
         }
     } catch (err) {
-        alert("Search me issue aaya. Internet connection check karein.");
+        alert("Search karne me problem hui. Key check karein.");
         console.error(err);
     }
 }
 
 /* Progress & Time Logic */
+function startProgressLoop() {
+    stopProgressLoop();
+    progressTimer = setInterval(updateProgress, 500);
+}
+
+function stopProgressLoop() {
+    clearInterval(progressTimer);
+}
+
 function updateProgress() {
-    if (!audio.duration) return;
-    const percent = (audio.currentTime / audio.duration) * 100;
-    document.getElementById("progressFill").style.width = percent + "%";
-    document.getElementById("currentTime").innerText = formatTime(audio.currentTime);
-    document.getElementById("totalDuration").innerText = formatTime(audio.duration);
+    if (!player || !player.getCurrentTime) return;
+    
+    const currentTime = player.getCurrentTime() || 0;
+    const duration = player.getDuration() || 0;
+
+    if (duration > 0) {
+        const percent = (currentTime / duration) * 100;
+        document.getElementById("progressFill").style.width = percent + "%";
+        document.getElementById("currentTime").innerText = formatTime(currentTime);
+        document.getElementById("totalDuration").innerText = formatTime(duration);
+    }
+}
+
+function resetProgressBar() {
+    document.getElementById("progressFill").style.width = "0%";
+    document.getElementById("currentTime").innerText = "0:00";
+    document.getElementById("totalDuration").innerText = "0:00";
 }
 
 function seekSong(event) {
-    if (!audio.duration) return;
+    if (!player || !player.getDuration) return;
+    
     const wrapper = document.getElementById("progressWrapper");
     const rect = wrapper.getBoundingClientRect();
     const clickPosition = (event.clientX - rect.left) / rect.width;
-    audio.currentTime = clickPosition * audio.duration;
+    const duration = player.getDuration();
+    
+    if (duration) {
+        const seekTime = clickPosition * duration;
+        player.seekTo(seekTime, true);
+        updateProgress();
+    }
 }
 
 function formatTime(seconds) {
@@ -995,10 +1079,13 @@ function formatTime(seconds) {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
-/* Volume Control */
+/* Volume Control Logic */
 function changeVolume(value) {
-    currentVolume = value / 100;
-    audio.volume = currentVolume;
+    currentVolume = value;
+    if (player && player.setVolume) {
+        player.setVolume(value);
+    }
+    updateMuteIcon(value);
     updateVolumeSliderBackground(value);
 }
 
@@ -1008,14 +1095,17 @@ function updateVolumeSliderBackground(value) {
 }
 
 function toggleMute() {
+    if (!player) return;
+    
     if (isMuted) {
-        audio.muted = false;
-        document.getElementById("volumeSlider").value = currentVolume * 100;
-        updateVolumeSliderBackground(currentVolume * 100);
+        player.unMute();
+        player.setVolume(currentVolume);
+        document.getElementById("volumeSlider").value = currentVolume;
+        updateVolumeSliderBackground(currentVolume);
         isMuted = false;
-        document.getElementById("muteBtn").innerText = "🔊";
+        updateMuteIcon(currentVolume);
     } else {
-        audio.muted = true;
+        player.mute();
         document.getElementById("volumeSlider").value = 0;
         updateVolumeSliderBackground(0);
         isMuted = true;
@@ -1023,21 +1113,32 @@ function toggleMute() {
     }
 }
 
-function renderSongs() {
+function updateMuteIcon(val) {
+    const muteBtn = document.getElementById("muteBtn");
+    if (val == 0) {
+        muteBtn.innerText = "🔇";
+    } else if (val < 50) {
+        muteBtn.innerText = "bottom";
+    } else {
+        muteBtn.innerText = "🔊";
+    }
+}
+
+function renderSongs(){
     const list = document.getElementById("songList");
     list.innerHTML = "";
 
-    songs.forEach((song, index) => {
+    songs.forEach((song, index)=>{
         const div = document.createElement("div");
         div.className = "song";
 
-        if (index === currentSong) {
+        if(index === currentSong){
             div.classList.add("active");
         }
 
         div.innerHTML = `
             <div class="song-number">
-                ${String(index + 1).padStart(2, "0")}
+                ${String(index+1).padStart(2,"0")}
             </div>
             <div class="song-info">
                 <strong>${song.title}</strong>
@@ -1050,7 +1151,7 @@ function renderSongs() {
 
         div.onclick = () => {
             currentSong = index;
-            loadSong(true);
+            loadSong();
         };
 
         list.appendChild(div);
@@ -1061,18 +1162,26 @@ function renderSongs() {
 
 /* Quote Rotation */
 let quoteIndex = 0;
-setInterval(() => {
+setInterval(()=>{
     const quote = document.getElementById("quote");
     quote.classList.add("fade");
 
-    setTimeout(() => {
-        quoteIndex = (quoteIndex + 1) % quotes.length;
+    setTimeout(()=>{
+        quoteIndex++;
+        if(quoteIndex >= quotes.length){
+            quoteIndex = 0;
+        }
         quote.innerText = '"' + quotes[quoteIndex] + '"';
         quote.classList.remove("fade");
     }, 500);
 }, 4000);
 
-initPlayer();
+/* Load YouTube API */
+const tag = document.createElement("script");
+tag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(tag);
+
+renderSongs();
 </script>
 
 </body>
