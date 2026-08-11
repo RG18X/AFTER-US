@@ -485,6 +485,7 @@ button.play:hover{
     max-height:620px;
     display:flex;
     flex-direction:column;
+    position: relative;
 }
 
 .queue-title{
@@ -507,6 +508,7 @@ button.play:hover{
     display: flex;
     gap: 8px;
     margin-bottom: 15px;
+    position: relative;
 }
 
 .search{
@@ -540,46 +542,75 @@ button.play:hover{
     background: #ff1f4c;
 }
 
-/* Search Results Section */
-.search-results-wrapper {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 54, 95, 0.3);
+/* Suggestions Dropdown Overlay */
+.suggestions-container {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    background: #121212;
+    border: 1px solid rgba(255, 54, 95, 0.4);
     border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 15px;
-    max-height: 220px;
+    z-index: 50;
+    max-height: 250px;
     overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    display: none;
 }
 
-.search-results-header {
+.suggestions-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
-    font-size: 12px;
+    padding: 10px 14px;
+    font-size: 11px;
     color: var(--accent);
     font-weight: bold;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-.close-search-btn {
+.close-sug-btn {
     background: none;
     border: none;
     color: #888;
     cursor: pointer;
-    font-size: 14px;
 }
 
-.close-search-btn:hover {
+.close-sug-btn:hover {
     color: #fff;
 }
 
-.search-results-wrapper::-webkit-scrollbar {
-    width: 4px;
+.sug-item {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.2s;
 }
 
-.search-results-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(255, 54, 95, 0.3);
-    border-radius: 4px;
+.sug-item:hover {
+    background: rgba(255, 54, 95, 0.15);
+}
+
+.sug-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sug-item-info strong {
+    display: block;
+    font-size: 12px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sug-item-info span {
+    font-size: 10px;
+    color: #888;
 }
 
 .song-list{
@@ -588,11 +619,11 @@ button.play:hover{
     flex: 1;
 }
 
-.song-list::-webkit-scrollbar {
+.song-list::-webkit-scrollbar, .suggestions-container::-webkit-scrollbar {
     width: 4px;
 }
 
-.song-list::-webkit-scrollbar-thumb {
+.song-list::-webkit-scrollbar-thumb, .suggestions-container::-webkit-scrollbar-thumb {
     background: rgba(255,255,255,0.1);
     border-radius: 4px;
 }
@@ -822,18 +853,18 @@ footer{
                 type="text"
                 id="search"
                 placeholder="Search any song on YouTube..."
-                onkeypress="if(event.key === 'Enter') searchYouTubeSongs()"
+                onkeypress="if(event.key === 'Enter') fetchSuggestions()"
             >
-            <button class="search-btn" onclick="searchYouTubeSongs()">Search</button>
-        </div>
+            <button class="search-btn" onclick="fetchSuggestions()">Search</button>
 
-        <!-- Dynamic Search Results -->
-        <div class="search-results-wrapper" id="searchResultsContainer" style="display: none;">
-            <div class="search-results-header">
-                <span>SEARCH RESULTS</span>
-                <button class="close-search-btn" onclick="closeSearchResults()">✕</button>
+            <!-- Suggestions Overlay -->
+            <div class="suggestions-container" id="suggestionsContainer">
+                <div class="suggestions-header">
+                    <span>SUGGESTIONS</span>
+                    <button class="close-sug-btn" onclick="hideSuggestions()">✕</button>
+                </div>
+                <div id="suggestionsList"></div>
             </div>
-            <div id="searchResultsList"></div>
         </div>
 
         <div class="song-list" id="songList"></div>
@@ -860,6 +891,7 @@ footer{
 <script>
 const YOUTUBE_API_KEY = "AIzaSyBLoglvlTn9aZfi_kg-O31Xy1wqktmvDno"; 
 
+// Default Songs Retained
 const defaultSongs = [
     { title:"Dreams", artist:"Amber", youtube:"fxA7rFlmmf4", liked: false },
     { title:"Hamari Adhuri Kahani", artist:"Arijit Singh", youtube:"TxT0KZ-EdLs", liked: false },
@@ -873,7 +905,6 @@ const defaultSongs = [
     { title:"Udaarian", artist:"Satinder Sartaaj", youtube:"9udS0mpi1L4", liked: false }
 ];
 
-// Load songs from LocalStorage or fallback to default
 let songs = JSON.parse(localStorage.getItem("afterus_songs")) || defaultSongs;
 
 const quotes = [
@@ -902,11 +933,7 @@ function saveSongsToStorage() {
 
 function sortSongs() {
     const currentPlayingVideoId = songs[currentSong] ? songs[currentSong].youtube : null;
-    
-    // Sort: Liked songs first
     songs.sort((a, b) => (b.liked === true ? 1 : 0) - (a.liked === true ? 1 : 0));
-    
-    // Maintain current playing song index
     if (currentPlayingVideoId) {
         currentSong = songs.findIndex(s => s.youtube === currentPlayingVideoId);
         if (currentSong === -1) currentSong = 0;
@@ -1141,8 +1168,8 @@ function toggleMute() {
     }
 }
 
-/* Search YouTube Songs & Display List */
-async function searchYouTubeSongs() {
+/* Fetch Suggestions on Search */
+async function fetchSuggestions() {
     const query = document.getElementById('search').value.trim();
     if (!query) return;
 
@@ -1153,62 +1180,52 @@ async function searchYouTubeSongs() {
         const data = await res.json();
 
         if (data.items && data.items.length > 0) {
-            displaySearchResults(data.items);
+            renderSuggestions(data.items);
         } else {
-            alert('No songs found. Try a different query!');
+            alert('No matching songs found.');
         }
     } catch (err) {
-        console.error('YouTube API Error:', err);
-        alert('Could not search YouTube right now.');
+        console.error('API Search Error:', err);
+        alert('Could not search right now.');
     }
 }
 
-function displaySearchResults(items) {
-    const resultsContainer = document.getElementById('searchResultsContainer');
-    const resultsList = document.getElementById('searchResultsList');
-    
-    resultsList.innerHTML = "";
+function renderSuggestions(items) {
+    const sugList = document.getElementById('suggestionsList');
+    const container = document.getElementById('suggestionsContainer');
+    sugList.innerHTML = "";
 
     items.forEach(item => {
-        const title = item.snippet.title;
+        const title = item.snippet.title.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
         const artist = item.snippet.channelTitle;
         const videoId = item.id.videoId;
 
         const div = document.createElement('div');
-        div.className = 'song';
-        div.onclick = () => selectSearchResult(title, artist, videoId);
+        div.className = 'sug-item';
+        div.onclick = () => playSelectedSuggestion(title, artist, videoId);
 
         div.innerHTML = `
-            <div class="song-info">
+            <div class="sug-item-info">
                 <strong>${title}</strong>
                 <span>${artist}</span>
             </div>
             <span style="color: var(--accent); font-size: 11px;">▶ Play</span>
         `;
-
-        resultsList.appendChild(div);
+        sugList.appendChild(div);
     });
 
-    resultsContainer.style.display = 'block';
+    container.style.display = 'block';
 }
 
-function closeSearchResults() {
-    document.getElementById('searchResultsContainer').style.display = 'none';
+function hideSuggestions() {
+    document.getElementById('suggestionsContainer').style.display = 'none';
 }
 
-function selectSearchResult(title, artist, videoId) {
-    const cleanTitle = title.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+function playSelectedSuggestion(title, artist, videoId) {
+    const newSong = { title, artist, youtube: videoId, liked: false };
     
-    const newSong = {
-        title: cleanTitle,
-        artist: artist,
-        youtube: videoId,
-        liked: false
-    };
-
-    // Check if song is already in queue
     let existingIndex = songs.findIndex(s => s.youtube === videoId);
-    
+
     if (existingIndex !== -1) {
         selectSong(existingIndex);
     } else {
@@ -1218,7 +1235,7 @@ function selectSearchResult(title, artist, videoId) {
         selectSong(0);
     }
 
-    closeSearchResults();
+    hideSuggestions();
     document.getElementById('search').value = "";
 }
 </script>
