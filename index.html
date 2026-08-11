@@ -480,21 +480,41 @@ button.play:hover{
     font-size:12px;
 }
 
+.search-box-wrapper {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
 .search{
-    width:100%;
-    padding:13px 16px;
+    flex: 1;
+    padding:12px 16px;
     background:rgba(255,255,255,.05);
     border:1px solid var(--border);
     border-radius:12px;
     outline:none;
     color:white;
-    margin-bottom:15px;
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .search:focus {
     border-color: var(--accent);
     box-shadow: 0 0 10px rgba(255,54,95,0.2);
+}
+
+.search-btn {
+    padding: 0 18px;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.search-btn:hover {
+    background: #ff1f4c;
 }
 
 .song-list{
@@ -711,13 +731,16 @@ footer{
             <span id="songCount">0 songs</span>
         </div>
 
-        <input
-            class="search"
-            type="text"
-            id="search"
-            placeholder="Search a song..."
-            oninput="searchSongs()"
-        >
+        <div class="search-box-wrapper">
+            <input
+                class="search"
+                type="text"
+                id="search"
+                placeholder="Search any song on YouTube..."
+                onkeypress="if(event.key === 'Enter') fetchSongFromYouTube()"
+            >
+            <button class="search-btn" onclick="fetchSongFromYouTube()">Search</button>
+        </div>
 
         <div class="song-list" id="songList"></div>
     </div>
@@ -740,57 +763,20 @@ footer{
 </footer>
 
 <script>
+// Aapki Provided YouTube API Key Added
+const YOUTUBE_API_KEY = "AIzaSyBLoglvlTn9aZfi_kg-O31Xy1wqktmvDno"; 
+
 const songs = [
-    {
-        title:"Dreams",
-        artist:"Amber",
-        youtube:"fxA7rFlmmf4"
-    },
-    {
-        title:"Hamari Adhuri Kahani",
-        artist:"Arijit Singh",
-        youtube:"TxT0KZ-EdLs"
-    },
-    {
-        title:"Tera Ghata",
-        artist:"Gajendra Verma",
-        youtube:"gvwgw_QgxIg"
-    },
-    {
-        title:"Humnava Mere",
-        artist:"Jubin Nautiyal",
-        youtube:"8WKwJfYge7Q"
-    },
-    {
-        title:"Phir Bhi Tumko Chaahunga",
-        artist:"Arijit Singh",
-        youtube:"_A9pY8v4S00"
-    },
-    {
-        title:"Agar Tum Saath Ho",
-        artist:"Alka Yagnik & Arijit Singh",
-        youtube:"sK7riqg254H"
-    },
-    {
-        title:"Hawayein",
-        artist:"Arijit Singh",
-        youtube:"LR1Z4hqjjdg"
-    },
-    {
-        title:"Tujhe Kitna Chahne Lage",
-        artist:"Arijit Singh",
-        youtube:"0vA6jhqKwVA"
-    },
-    {
-        title:"Tum Hi Ho",
-        artist:"Arijit Singh",
-        youtube:"UNr0_O8L80g"
-    },
-    {
-        title:"Udaarian",
-        artist:"Satinder Sartaaj",
-        youtube:"9udS0mpi1L4"
-    }
+    { title:"Dreams", artist:"Amber", youtube:"fxA7rFlmmf4" },
+    { title:"Hamari Adhuri Kahani", artist:"Arijit Singh", youtube:"TxT0KZ-EdLs" },
+    { title:"Tera Ghata", artist:"Gajendra Verma", youtube:"gvwgw_QgxIg" },
+    { title:"Humnava Mere", artist:"Jubin Nautiyal", youtube:"8WKwJfYge7Q" },
+    { title:"Phir Bhi Tumko Chaahunga", artist:"Arijit Singh", youtube:"_A9pY8v4S00" },
+    { title:"Agar Tum Saath Ho", artist:"Alka Yagnik & Arijit Singh", youtube:"sK7riqg254H" },
+    { title:"Hawayein", artist:"Arijit Singh", youtube:"LR1Z4hqjjdg" },
+    { title:"Tujhe Kitna Chahne Lage", artist:"Arijit Singh", youtube:"0vA6jhqKwVA" },
+    { title:"Tum Hi Ho", artist:"Arijit Singh", youtube:"UNr0_O8L80g" },
+    { title:"Udaarian", artist:"Satinder Sartaaj", youtube:"9udS0mpi1L4" }
 ];
 
 const quotes = [
@@ -803,12 +789,7 @@ const quotes = [
     "I miss what we were, not what we became.",
     "Some memories have no expiry date.",
     "You were my favorite chapter. I just wish it had a better ending.",
-    "Not every love story gets the ending it deserves.",
-    "I stopped waiting. But I never stopped remembering.",
-    "The heart remembers what the mind tries to forget.",
-    "Maybe someday this song won't remind me of you.",
-    "We became strangers with memories.",
-    "Some goodbyes happen without words."
+    "Not every love story gets the ending it deserves."
 ];
 
 let currentSong = 0;
@@ -910,6 +891,42 @@ function updateNowPlaying(){
     document.getElementById("currentArtist").innerText = song.artist;
 }
 
+/* YouTube Real-Time API Search */
+async function fetchSongFromYouTube() {
+    const query = document.getElementById("search").value.trim();
+    if (!query) return;
+
+    try {
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.items && data.items.length > 0) {
+            const item = data.items[0];
+            const videoId = item.id.videoId;
+            const title = item.snippet.title;
+            const artist = item.snippet.channelTitle;
+
+            const newSong = {
+                title: title,
+                artist: artist,
+                youtube: videoId
+            };
+
+            songs.unshift(newSong); // Add to top of playlist
+            currentSong = 0;
+            loadSong();
+            player.playVideo();
+            document.getElementById("search").value = "";
+        } else {
+            alert("Song nahi mila! Kuch aur try karein.");
+        }
+    } catch (err) {
+        alert("Search karne me problem hui. API key check karein.");
+        console.error(err);
+    }
+}
+
 /* Progress & Time Logic */
 function startProgressLoop() {
     stopProgressLoop();
@@ -1006,27 +1023,21 @@ function updateMuteIcon(val) {
     }
 }
 
-function renderSongs(filter=""){
+function renderSongs(){
     const list = document.getElementById("songList");
     list.innerHTML = "";
 
-    let visibleSongs = songs.filter(song =>
-        song.title.toLowerCase().includes(filter.toLowerCase()) ||
-        song.artist.toLowerCase().includes(filter.toLowerCase())
-    );
-
-    visibleSongs.forEach((song)=>{
-        const realIndex = songs.indexOf(song);
+    songs.forEach((song, index)=>{
         const div = document.createElement("div");
         div.className = "song";
 
-        if(realIndex === currentSong){
+        if(index === currentSong){
             div.classList.add("active");
         }
 
         div.innerHTML = `
             <div class="song-number">
-                ${String(realIndex+1).padStart(2,"0")}
+                ${String(index+1).padStart(2,"0")}
             </div>
             <div class="song-info">
                 <strong>${song.title}</strong>
@@ -1035,7 +1046,7 @@ function renderSongs(filter=""){
         `;
 
         div.onclick = () => {
-            currentSong = realIndex;
+            currentSong = index;
             loadSong();
         };
 
@@ -1043,11 +1054,6 @@ function renderSongs(filter=""){
     });
 
     document.getElementById("songCount").innerText = songs.length + " songs";
-}
-
-function searchSongs(){
-    const value = document.getElementById("search").value;
-    renderSongs(value);
 }
 
 /* Quote Rotation */
