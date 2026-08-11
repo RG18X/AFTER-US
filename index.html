@@ -276,6 +276,8 @@ header{
 .now-playing{
     text-align:center;
     padding:5px;
+    position: relative;
+    width: 100%;
 }
 
 .now-playing small{
@@ -295,6 +297,27 @@ header{
     color:#777;
     margin-top:4px;
     font-size:13px;
+}
+
+.like-main-btn {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.like-main-btn:hover {
+    transform: scale(1.2);
+}
+
+.like-main-btn.liked {
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* Progress Bar & Timing */
@@ -582,6 +605,24 @@ button.play:hover{
     font-size:11px;
 }
 
+.item-like-btn {
+    background: none;
+    border: none;
+    color: #444;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.item-like-btn:hover {
+    transform: scale(1.2);
+}
+
+.item-like-btn.liked {
+    color: var(--accent);
+}
+
 /* About Section */
 .about{
     text-align:center;
@@ -689,6 +730,7 @@ footer{
         </div>
 
         <div class="now-playing">
+            <button class="like-main-btn" id="likeMainBtn" onclick="toggleCurrentLike()">♡</button>
             <small>NOW PLAYING (AUDIO)</small>
             <h2 id="currentTitle">Dreams</h2>
             <p id="currentArtist">Amber</p>
@@ -763,21 +805,23 @@ footer{
 </footer>
 
 <script>
-// Aapki Provided YouTube API Key Added
 const YOUTUBE_API_KEY = "AIzaSyBLoglvlTn9aZfi_kg-O31Xy1wqktmvDno"; 
 
-const songs = [
-    { title:"Dreams", artist:"Amber", youtube:"fxA7rFlmmf4" },
-    { title:"Hamari Adhuri Kahani", artist:"Arijit Singh", youtube:"TxT0KZ-EdLs" },
-    { title:"Tera Ghata", artist:"Gajendra Verma", youtube:"gvwgw_QgxIg" },
-    { title:"Humnava Mere", artist:"Jubin Nautiyal", youtube:"8WKwJfYge7Q" },
-    { title:"Phir Bhi Tumko Chaahunga", artist:"Arijit Singh", youtube:"_A9pY8v4S00" },
-    { title:"Agar Tum Saath Ho", artist:"Alka Yagnik & Arijit Singh", youtube:"sK7riqg254H" },
-    { title:"Hawayein", artist:"Arijit Singh", youtube:"LR1Z4hqjjdg" },
-    { title:"Tujhe Kitna Chahne Lage", artist:"Arijit Singh", youtube:"0vA6jhqKwVA" },
-    { title:"Tum Hi Ho", artist:"Arijit Singh", youtube:"UNr0_O8L80g" },
-    { title:"Udaarian", artist:"Satinder Sartaaj", youtube:"9udS0mpi1L4" }
+const defaultSongs = [
+    { title:"Dreams", artist:"Amber", youtube:"fxA7rFlmmf4", liked: false },
+    { title:"Hamari Adhuri Kahani", artist:"Arijit Singh", youtube:"TxT0KZ-EdLs", liked: false },
+    { title:"Tera Ghata", artist:"Gajendra Verma", youtube:"gvwgw_QgxIg", liked: false },
+    { title:"Humnava Mere", artist:"Jubin Nautiyal", youtube:"8WKwJfYge7Q", liked: false },
+    { title:"Phir Bhi Tumko Chaahunga", artist:"Arijit Singh", youtube:"_A9pY8v4S00", liked: false },
+    { title:"Agar Tum Saath Ho", artist:"Alka Yagnik & Arijit Singh", youtube:"sK7riqg254H", liked: false },
+    { title:"Hawayein", artist:"Arijit Singh", youtube:"LR1Z4hqjjdg", liked: false },
+    { title:"Tujhe Kitna Chahne Lage", artist:"Arijit Singh", youtube:"0vA6jhqKwVA", liked: false },
+    { title:"Tum Hi Ho", artist:"Arijit Singh", youtube:"UNr0_O8L80g", liked: false },
+    { title:"Udaarian", artist:"Satinder Sartaaj", youtube:"9udS0mpi1L4", liked: false }
 ];
+
+// Load songs from LocalStorage or fallback to default
+let songs = JSON.parse(localStorage.getItem("afterus_songs")) || defaultSongs;
 
 const quotes = [
     "Some people leave, but their memories don't.",
@@ -799,7 +843,25 @@ let progressTimer;
 let isMuted = false;
 let currentVolume = 100;
 
+function saveSongsToStorage() {
+    localStorage.setItem("afterus_songs", JSON.stringify(songs));
+}
+
+function sortSongs() {
+    const currentPlayingVideoId = songs[currentSong] ? songs[currentSong].youtube : null;
+    
+    // Sort: Liked songs first
+    songs.sort((a, b) => (b.liked === true ? 1 : 0) - (a.liked === true ? 1 : 0));
+    
+    // Maintain current playing song index
+    if (currentPlayingVideoId) {
+        currentSong = songs.findIndex(s => s.youtube === currentPlayingVideoId);
+        if (currentSong === -1) currentSong = 0;
+    }
+}
+
 function onYouTubeIframeAPIReady(){
+    sortSongs();
     player = new YT.Player('player',{
         videoId:songs[currentSong].youtube,
         playerVars:{
@@ -889,6 +951,34 @@ function updateNowPlaying(){
     const song = songs[currentSong];
     document.getElementById("currentTitle").innerText = song.title;
     document.getElementById("currentArtist").innerText = song.artist;
+    
+    const likeBtn = document.getElementById("likeMainBtn");
+    if(song.liked) {
+        likeBtn.innerHTML = "♥";
+        likeBtn.classList.add("liked");
+    } else {
+        likeBtn.innerHTML = "♡";
+        likeBtn.classList.remove("liked");
+    }
+}
+
+function toggleCurrentLike() {
+    songs[currentSong].liked = !songs[currentSong].liked;
+    saveSongsToStorage();
+    sortSongs();
+    saveSongsToStorage();
+    updateNowPlaying();
+    renderSongs();
+}
+
+function toggleSongLike(index, event) {
+    event.stopPropagation();
+    songs[index].liked = !songs[index].liked;
+    saveSongsToStorage();
+    sortSongs();
+    saveSongsToStorage();
+    updateNowPlaying();
+    renderSongs();
 }
 
 /* YouTube Real-Time API Search */
@@ -910,11 +1000,22 @@ async function fetchSongFromYouTube() {
             const newSong = {
                 title: title,
                 artist: artist,
-                youtube: videoId
+                youtube: videoId,
+                liked: false
             };
 
-            songs.unshift(newSong); // Add to top of playlist
-            currentSong = 0;
+            // Check if song already exists
+            const existingIndex = songs.findIndex(s => s.youtube === videoId);
+            if(existingIndex !== -1) {
+                currentSong = existingIndex;
+            } else {
+                songs.unshift(newSong);
+                currentSong = 0;
+            }
+
+            saveSongsToStorage();
+            sortSongs();
+            saveSongsToStorage();
             loadSong();
             player.playVideo();
             document.getElementById("search").value = "";
@@ -922,7 +1023,7 @@ async function fetchSongFromYouTube() {
             alert("Song nahi mila! Kuch aur try karein.");
         }
     } catch (err) {
-        alert("Search karne me problem hui. API key check karein.");
+        alert("Search karne me problem hui. Key check karein.");
         console.error(err);
     }
 }
@@ -1017,7 +1118,7 @@ function updateMuteIcon(val) {
     if (val == 0) {
         muteBtn.innerText = "🔇";
     } else if (val < 50) {
-        muteBtn.innerText = "🔉";
+        muteBtn.innerText = "bottom";
     } else {
         muteBtn.innerText = "🔊";
     }
@@ -1043,6 +1144,9 @@ function renderSongs(){
                 <strong>${song.title}</strong>
                 <span>${song.artist}</span>
             </div>
+            <button class="item-like-btn ${song.liked ? 'liked' : ''}" onclick="toggleSongLike(${index}, event)">
+                ${song.liked ? '♥' : '♡'}
+            </button>
         `;
 
         div.onclick = () => {
